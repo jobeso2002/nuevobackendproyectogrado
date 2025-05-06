@@ -28,15 +28,19 @@ export class AuthService {
       password: hashedPassword
     });
 
+     // Obtener el usuario completo con relaciones
+  const userWithRelations = await this.usuarioService.findOne(newUser.id);
+
+
     // Generar token para el nuevo usuario
     const payload = {
-      id: newUser.id,
-      email: newUser.email,
+      id: userWithRelations.id,
+      email: userWithRelations.email,
       role: {
-        id: newUser.role.id,
-        name: newUser.role.name
+        id: userWithRelations.role.id,
+        name: userWithRelations.role.name
       },
-      permisos: newUser.role.permiso?.map(p => p.name) || []
+      permisos: userWithRelations.role.permiso?.map(p => p.name) || []
     };
 
     const token = this.jwtService.sign(payload);
@@ -44,10 +48,10 @@ export class AuthService {
     return { 
       token,
       user: {
-        id: newUser.id,
-        email: newUser.email,
-        username: newUser.username,
-        role: newUser.role.name
+        id: userWithRelations.id,
+        email: userWithRelations.email,
+        username: userWithRelations.username,
+        role: userWithRelations.role.name
       }
     };
   }
@@ -56,15 +60,21 @@ export class AuthService {
     // Buscar usuario por email
     const user = await this.usuarioService.findOneByEmail(loginDto.email);
     if (!user) {
+        console.log('Usuario no encontrado con email:', loginDto.email);
       throw new UnauthorizedException('Credenciales inválidas');
     }
+
+     // Verificar contraseña con debug
+  console.log('Contraseña recibida:', loginDto.password);
+  console.log('Hash almacenado:', user.password);
 
     // Verificar contraseña
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    console.log('Comparación resultó:', isPasswordValid);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
-
+this.usuarioService
     // Preparar payload del token
     const payload = {
       id: user.id,

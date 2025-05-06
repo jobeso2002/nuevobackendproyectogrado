@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from './entities/usuario.entity';
@@ -26,29 +31,35 @@ export class UsuarioService {
     const existingUser = await this.usuarioRepository.findOne({
       where: [
         { email: createUsuarioDto.email },
-        { username: createUsuarioDto.username }
-      ]
+        { username: createUsuarioDto.username },
+      ],
     });
 
     if (existingUser) {
-      throw new ConflictException('El email o nombre de usuario ya está en uso');
-    }
-
-    // Verificar si el rol existe
-    const role = await this.roleRepository.findOne({ 
-      where: { id: createUsuarioDto.id_rol } 
-    });
-    if (!role) {
-      throw new NotFoundException(`Rol con ID ${createUsuarioDto.id_rol} no encontrado`);
+      throw new ConflictException(
+        'El email o nombre de usuario ya está en uso',
+      );
     }
 
     // Hashear la contraseña
     const hashedPassword = await this.hashPassword(createUsuarioDto.password);
 
+    // Verificar si el rol existe
+    const role = await this.roleRepository.findOne({
+      where: { id: createUsuarioDto.id_rol },
+      relations:['permiso'] //cargar permisos del rol
+    });
+
+    if (!role) {
+      throw new NotFoundException(
+        `Rol con ID ${createUsuarioDto.id_rol} no encontrado`,
+      );
+    }
+
     const usuario = this.usuarioRepository.create({
       ...createUsuarioDto,
       password: hashedPassword,
-      role
+      role, //Asignar el rol con relaciones cargadas
     });
 
     return await this.usuarioRepository.save(usuario);
@@ -57,7 +68,7 @@ export class UsuarioService {
   async findAll(): Promise<Usuario[]> {
     return await this.usuarioRepository.find({
       relations: ['role', 'role.permiso'],
-      select: ['id', 'username', 'email', 'role']
+      select: ['id', 'username', 'email', 'role'],
     });
   }
 
@@ -65,7 +76,7 @@ export class UsuarioService {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
       relations: ['role', 'role.permiso'],
-      select: ['id', 'username', 'email', 'role']
+      select: ['id', 'username', 'email', 'role'],
     });
 
     if (!usuario) {
@@ -76,14 +87,18 @@ export class UsuarioService {
   }
 
   async findOneByEmail(email: string): Promise<Usuario | undefined> {
-    const usuario = await this.usuarioRepository.findOne({ 
+    const usuario = await this.usuarioRepository.findOne({
       where: { email },
-      relations: ['role', 'role.permiso'] 
+      relations: ['role', 'role.permiso'],
+      select: ['id', 'email', 'username', 'password', 'role'] // Añadir password al select
     });
     return usuario || undefined;
   }
 
-  async update(id: number, updateUsuarioDto: UpdateUsuarioDto): Promise<Usuario> {
+  async update(
+    id: number,
+    updateUsuarioDto: UpdateUsuarioDto,
+  ): Promise<Usuario> {
     const usuario = await this.usuarioRepository.findOne({ where: { id } });
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -94,27 +109,33 @@ export class UsuarioService {
       const existingUser = await this.usuarioRepository.findOne({
         where: [
           { email: updateUsuarioDto.email },
-          { username: updateUsuarioDto.username }
-        ]
+          { username: updateUsuarioDto.username },
+        ],
       });
 
       if (existingUser && existingUser.id !== id) {
-        throw new ConflictException('El email o nombre de usuario ya está en uso');
+        throw new ConflictException(
+          'El email o nombre de usuario ya está en uso',
+        );
       }
     }
 
     // Actualizar contraseña si se proporciona
     if (updateUsuarioDto.password) {
-      updateUsuarioDto.password = await this.hashPassword(updateUsuarioDto.password);
+      updateUsuarioDto.password = await this.hashPassword(
+        updateUsuarioDto.password,
+      );
     }
 
     // Actualizar rol si se proporciona
     if (updateUsuarioDto.id_rol) {
-      const role = await this.roleRepository.findOne({ 
-        where: { id: updateUsuarioDto.id_rol } 
+      const role = await this.roleRepository.findOne({
+        where: { id: updateUsuarioDto.id_rol },
       });
       if (!role) {
-        throw new NotFoundException(`Rol con ID ${updateUsuarioDto.id_rol} no encontrado`);
+        throw new NotFoundException(
+          `Rol con ID ${updateUsuarioDto.id_rol} no encontrado`,
+        );
       }
       usuario.role = role;
     }
@@ -125,10 +146,10 @@ export class UsuarioService {
   }
 
   async remove(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({ 
+    const usuario = await this.usuarioRepository.findOne({
       where: { id },
       relations: [
-        'clubesResponsables', 
+        'clubesResponsables',
         'eventosOrganizados',
         'partidosArbitroPrincipal',
         'partidosArbitroSecundario',
@@ -138,16 +159,16 @@ export class UsuarioService {
         'inscripcionesRechazadas',
         'resultadosRegistrados',
         'transferenciasAprobadas',
-        'transferenciasRechazadas'
-      ]
+        'transferenciasRechazadas',
+      ],
     });
-    
+
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
     // Verificar relaciones antes de eliminar
-    const hasRelations = 
+    const hasRelations =
       usuario.clubesResponsables?.length > 0 ||
       usuario.eventosOrganizados?.length > 0 ||
       usuario.partidosArbitroPrincipal?.length > 0 ||
@@ -161,7 +182,9 @@ export class UsuarioService {
       usuario.transferenciasRechazadas?.length > 0;
 
     if (hasRelations) {
-      throw new BadRequestException('No se puede eliminar el usuario porque tiene relaciones activas');
+      throw new BadRequestException(
+        'No se puede eliminar el usuario porque tiene relaciones activas',
+      );
     }
 
     await this.usuarioRepository.remove(usuario);
@@ -181,18 +204,19 @@ export class UsuarioService {
     return await this.usuarioRepository.find({
       where: { role: { id: roleId } },
       relations: ['role'],
-      select: ['id', 'username', 'email']
+      select: ['id', 'username', 'email'],
     });
   }
 
   async validateUser(email: string, password: string): Promise<Usuario | null> {
-    const user = await this.usuarioRepository.findOne({ 
+    const user = await this.usuarioRepository.findOne({
       where: { email },
-      select: ['id', 'username', 'email', 'password', 'role']
+      relations: ['role', 'role.permiso'],
+      select: ['id', 'username', 'email', 'password', 'role'],
     });
 
     if (user && await bcrypt.compare(password, user.password)) {
-      const { password, ...result } = user;
+      const { password, ...result } = user; // Remover password del resultado
       return result as Usuario;
     }
     return null;
