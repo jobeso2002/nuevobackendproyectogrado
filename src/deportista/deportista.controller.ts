@@ -24,6 +24,7 @@ export class DeportistaController {
     return this.deportistaService.create(createDeportistaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los deportistas activos' })
   @ApiResponse({ status: 200, description: 'Lista de deportistas' })

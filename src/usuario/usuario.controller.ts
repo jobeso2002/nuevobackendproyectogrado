@@ -13,11 +13,12 @@ import { ChangePasswordDto } from './dto/ChangePasswordDto';
 
 @ApiTags('usuario')
 @Controller('usuario')
-@ApiBearerAuth('mi secreto1')
+
 @UseGuards(AuthGuard, RolesGuard)
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
-
+  @ApiBearerAuth('mi secreto1')
+  
   @Post()
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
@@ -28,6 +29,7 @@ export class UsuarioController {
     return this.usuarioService.create(createUsuarioDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
@@ -36,6 +38,7 @@ export class UsuarioController {
     return this.usuarioService.findAll();
   }
 
+  
   @Get(':id')
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
@@ -45,6 +48,7 @@ export class UsuarioController {
     return this.usuarioService.findOne(+id);
   }
 
+  
   @Get('role/:roleId')
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Obtener usuarios por rol' })
@@ -53,6 +57,7 @@ export class UsuarioController {
     return this.usuarioService.findByRole(+roleId);
   }
 
+  
   @Patch(':id')
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Actualizar un usuario' })
@@ -76,6 +81,7 @@ export class UsuarioController {
     return this.usuarioService.changePassword(+id, changePasswordDto.newPassword);
   }
 
+  
   @Delete(':id')
   @Roles(RoleType.ADMIN)
   @ApiOperation({ summary: 'Eliminar un usuario' })

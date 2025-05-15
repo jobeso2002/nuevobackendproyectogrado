@@ -1,10 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Club } from './entities/club.entity';
 import { Repository } from 'typeorm';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
+import { ClubResponseDto } from './dto/club-respon.dto';
 
 @Injectable()
 export class ClubService {
@@ -13,12 +18,11 @@ export class ClubService {
     private readonly clubRepository: Repository<Club>,
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-    
-  ){}
+  ) {}
 
   async create(createClubDto: CreateClubDto): Promise<Club> {
-     // Verificar si ya existe un club con el mismo nombre
-     const existingClub = await this.clubRepository.findOne({
+    // Verificar si ya existe un club con el mismo nombre
+    const existingClub = await this.clubRepository.findOne({
       where: { nombre: createClubDto.nombre },
     });
 
@@ -28,7 +32,7 @@ export class ClubService {
 
     // Verificar si el usuario responsable existe
     const responsable = await this.usuarioRepository.findOne({
-      where: { id: createClubDto.id_usuario_responsable},
+      where: { id: createClubDto.id_usuario_responsable },
     });
 
     if (!responsable) {
@@ -45,39 +49,78 @@ export class ClubService {
     return this.clubRepository.save(club);
   }
 
-  async findAll(): Promise<Club[]>  {
-    return this.clubRepository.find({
-      relations: ['responsable', 'equipos'],
+  async findAll(): Promise<ClubResponseDto[]> {
+    const clubs = await this.clubRepository.find({
+      relations: ['responsable'],
       where: { estado: 'activo' },
     });
+
+    return clubs.map((club) => this.mapClubToResponseDto(club));
   }
 
   // En tu ClubService (club.service.ts)
-async findAllByResponsable(responsableId: number): Promise<Club[]> {
-  return this.clubRepository.find({
-    relations: ['responsable', 'equipos'],
-    where: {
-      estado: 'activo',
-      responsable: { id: responsableId }
-    },
-  });
-}
+  async findAllByResponsable(
+    responsableId: number,
+  ): Promise<ClubResponseDto[]> {
+    const clubs = await this.clubRepository.find({
+      relations: ['responsable', 'equipos'],
+      where: {
+        estado: 'activo',
+        responsable: { id: responsableId },
+      },
+    });
 
-  async findOne(id: number): Promise<Club> {
+    return clubs.map((club) => this.mapClubToResponseDto(club));
+  }
+
+  async findOne(id: number): Promise<ClubResponseDto> {
     const club = await this.clubRepository.findOne({
       where: { id },
-      relations: ['responsable', 'equipos', 'transferenciasSalientes', 'transferenciasEntrantes'],
+      relations: ['responsable'],
     });
 
     if (!club) {
       throw new NotFoundException(`Club con ID ${id} no encontrado`);
     }
 
+    return this.mapClubToResponseDto(club);
+  }
+
+  private mapClubToResponseDto(club: Club): ClubResponseDto {
+    return {
+      id: club.id,
+      nombre: club.nombre,
+      fundacion: club.fundacion,
+      direccion: club.direccion,
+      telefono: club.telefono,
+      email: club.email,
+      logo: club.logo,
+      estado: club.estado,
+      responsable: {
+        id: club.responsable.id,
+        username: club.responsable.username,
+        email: club.responsable.email,
+      },
+    };
+  }
+
+  private async findEntity(id: number): Promise<Club> {
+    const club = await this.clubRepository.findOne({
+      where: { id },
+      relations: ['responsable'],
+    });
+
+    if (!club) {
+      throw new NotFoundException(`Club con ID ${id} no encontrado`);
+    }
     return club;
   }
 
-  async update(id: number, updateClubDto: UpdateClubDto): Promise<Club> {
-    const club = await this.findOne(id);
+  async update(
+    id: number,
+    updateClubDto: UpdateClubDto,
+  ): Promise<ClubResponseDto> {
+    const club = await this.findEntity(id);
 
     if (updateClubDto.nombre && updateClubDto.nombre !== club.nombre) {
       const existingClub = await this.clubRepository.findOne({
@@ -103,13 +146,13 @@ async findAllByResponsable(responsableId: number): Promise<Club[]> {
     }
 
     this.clubRepository.merge(club, updateClubDto);
-    return this.clubRepository.save(club);
+    return this.mapClubToResponseDto(await this.clubRepository.save(club));
   }
 
-  async remove(id: number): Promise<Club> {
-    const club = await this.findOne(id);
+  async remove(id: number): Promise<ClubResponseDto> {
+    const club = await this.findEntity(id);
     club.estado = 'inactivo';
-    return this.clubRepository.save(club);
+    return this.mapClubToResponseDto(await this.clubRepository.save(club));
   }
 
   async getEquiposByClub(id: number): Promise<Club> {
@@ -145,10 +188,14 @@ async findAllByResponsable(responsableId: number): Promise<Club[]> {
     }
 
     // Aplanar la lista de deportistas de todos los equipos
-    const deportistas = club.equipos.flatMap(equipo => equipo.equipoDeportistas);
-    
+    const deportistas = club.equipos.flatMap(
+      (equipo) => equipo.equipoDeportistas,
+    );
+
     // Eliminar duplicados (en caso de que un deportista esté en varios equipos)
-    const uniqueDeportistas = [...new Map(deportistas.map(item => [item.id, item])).values()];
+    const uniqueDeportistas = [
+      ...new Map(deportistas.map((item) => [item.id, item])).values(),
+    ];
 
     return {
       club: {
@@ -158,5 +205,4 @@ async findAllByResponsable(responsableId: number): Promise<Club[]> {
       deportistas: uniqueDeportistas,
     };
   }
-
 }

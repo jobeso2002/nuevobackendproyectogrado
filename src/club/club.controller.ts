@@ -1,32 +1,60 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Authen } from '../auth/decorators/auth.decorator';
 import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
+import { ClubResponseDto } from './dto/club-respon.dto';
 
 @Controller('club')
 export class ClubController {
   constructor(private readonly clubService: ClubService) {}
-  
+
   @ApiBearerAuth('mi secreto1')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo club' })
-  @ApiResponse({ status: 201, description: 'Club creado exitosamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 409, description: 'El nombre del club ya existe' })
-  create(@Body() createClubDto: CreateClubDto) {
+  @ApiResponse({
+    status: 201,
+    description: 'Club creado exitosamente',
+    type: ClubResponseDto, // Agregar tipo de respuesta
+  })
+  async create(@Body() createClubDto: CreateClubDto): Promise<ClubResponseDto> {
     return this.clubService.create(createClubDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los clubes activos' })
-  @ApiResponse({ status: 200, description: 'Lista de clubes' })
-  @ApiQuery({ name: 'responsable', required: false, description: 'Filtrar por ID de usuario responsable' })
-  async findAll(@Query('responsable') responsableId?: number) {
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de clubes',
+    type: [ClubResponseDto],
+  })
+  @ApiQuery({
+    name: 'responsable',
+    required: false,
+    description: 'Filtrar por ID de usuario responsable',
+  })
+  async findAll(
+    @Query('responsable') responsableId?: number,
+  ): Promise<ClubResponseDto[]> {
     if (responsableId) {
       return this.clubService.findAllByResponsable(responsableId);
     }
@@ -35,26 +63,38 @@ export class ClubController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un club por ID' })
-  @ApiResponse({ status: 200, description: 'Club encontrado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Club encontrado',
+    type: [ClubResponseDto],
+  })
   @ApiResponse({ status: 404, description: 'Club no encontrado' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<ClubResponseDto> {
     return this.clubService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un club' })
-  @ApiResponse({ status: 200, description: 'Club actualizado' })
-  @ApiResponse({ status: 404, description: 'Club no encontrado' })
-  @ApiResponse({ status: 409, description: 'El nombre del club ya existe' })
-  update(@Param('id') id: string, @Body() updateClubDto: UpdateClubDto) {
+  @ApiResponse({
+    status: 200,
+    description: 'Club actualizado',
+    type: ClubResponseDto, // Agregar tipo
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateClubDto: UpdateClubDto,
+  ): Promise<ClubResponseDto> {
     return this.clubService.update(+id, updateClubDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un club (borrado lógico)' })
-  @ApiResponse({ status: 200, description: 'Club desactivado' })
-  @ApiResponse({ status: 404, description: 'Club no encontrado' })
-  remove(@Param('id') id: string) {
+  @ApiResponse({
+    status: 200,
+    description: 'Club desactivado',
+    type: ClubResponseDto, // Mostrar estructura de respuesta
+  })
+  async remove(@Param('id') id: string): Promise<ClubResponseDto> {
     return this.clubService.remove(+id);
   }
 
@@ -75,11 +115,12 @@ export class ClubController {
   }
 
   @Get(':id/deportistas')
-  @ApiOperation({ summary: 'Obtener deportistas de un club (todos los equipos)' })
+  @ApiOperation({
+    summary: 'Obtener deportistas de un club (todos los equipos)',
+  })
   @ApiResponse({ status: 200, description: 'Lista de deportistas del club' })
   @ApiResponse({ status: 404, description: 'Club no encontrado' })
   getDeportistas(@Param('id') id: string) {
     return this.clubService.getDeportistasByClub(+id);
   }
 }
-  
