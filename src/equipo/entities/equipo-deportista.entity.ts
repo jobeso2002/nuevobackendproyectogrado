@@ -1,9 +1,10 @@
 // src/equipo/entities/equipo-deportista.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Equipo } from './equipo.entity';
 import { Deportista } from '../../deportista/entities/deportista.entity';
 
 @Entity('equipo_deportista')
+@Index(['idEquipo', 'idDeportista'], { unique: true })// Evita duplicados
 export class EquipoDeportista {
   @PrimaryGeneratedColumn({ name: 'id_equipo_deportista' })
   id: number;
@@ -20,7 +21,7 @@ export class EquipoDeportista {
   @Column({
     type: 'enum',
     enum: ['activo', 'inactivo'],
-    default: 'activo',
+    default: 'activo',  
   })
   estado: string;
 

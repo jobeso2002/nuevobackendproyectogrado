@@ -1,12 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { EquipoService } from './equipo.service';
 import { CreateEquipoDto } from './dto/create-equipo.dto';
 import { UpdateEquipoDto } from './dto/update-equipo.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AddDeportistaDto } from './dto/add-deportista.dto';
 import { PermisoType } from '../common/permiso.enum';
 import { RoleType } from '../common/tiporole.enum';
 import { Authen } from '../auth/decorators/auth.decorator';
+import { EquipoResponseDto } from './dto/equiporesponse.dto';
 
 @Controller('equipo')
 export class EquipoController {
@@ -19,17 +34,22 @@ export class EquipoController {
   @ApiResponse({ status: 201, description: 'Equipo creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 404, description: 'Club no encontrado' })
-  @ApiResponse({ status: 409, description: 'Ya existe un equipo con este nombre en el club' })
+  @ApiResponse({
+    status: 409,
+    description: 'Ya existe un equipo con este nombre en el club',
+  })
   create(@Body() createEquipoDto: CreateEquipoDto) {
     return this.equipoService.create(createEquipoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los equipos activos' })
-  @ApiResponse({ status: 200, description: 'Lista de equipos' })
-  @ApiQuery({ name: 'club', required: false, description: 'Filtrar por ID de club' })
-  @ApiQuery({ name: 'categoria', required: false, description: 'Filtrar por categoría (masculino, femenino, mixto)' })
-  @ApiQuery({ name: 'rama', required: false, description: 'Filtrar por rama (sub-15, sub-17, sub-19, mayores)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de equipos',
+    type: [EquipoResponseDto],
+  })
   async findAll(
     @Query('club') clubId?: number,
     @Query('categoria') categoria?: string,
@@ -39,7 +59,7 @@ export class EquipoController {
     if (clubId) options.club = { id: clubId };
     if (categoria) options.categoria = categoria;
     if (rama) options.rama = rama;
-    
+
     return this.equipoService.findAll(options);
   }
 
@@ -55,7 +75,10 @@ export class EquipoController {
   @ApiOperation({ summary: 'Actualizar un equipo' })
   @ApiResponse({ status: 200, description: 'Equipo actualizado' })
   @ApiResponse({ status: 404, description: 'Equipo o club no encontrado' })
-  @ApiResponse({ status: 409, description: 'Ya existe un equipo con este nombre en el club' })
+  @ApiResponse({
+    status: 409,
+    description: 'Ya existe un equipo con este nombre en el club',
+  })
   update(@Param('id') id: string, @Body() updateEquipoDto: UpdateEquipoDto) {
     return this.equipoService.update(+id, updateEquipoDto);
   }
@@ -71,9 +94,18 @@ export class EquipoController {
   @Post(':id/deportistas')
   @ApiOperation({ summary: 'Agregar un deportista al equipo' })
   @ApiResponse({ status: 200, description: 'Deportista agregado al equipo' })
-  @ApiResponse({ status: 404, description: 'Equipo o deportista no encontrado' })
-  @ApiResponse({ status: 409, description: 'El deportista ya está en este equipo' })
-  addDeportista(@Param('id') id: string, @Body() addDeportistaDto: AddDeportistaDto) {
+  @ApiResponse({
+    status: 404,
+    description: 'Equipo o deportista no encontrado',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'El deportista ya está en este equipo',
+  })
+  addDeportista(
+    @Param('id') id: string,
+    @Body() addDeportistaDto: AddDeportistaDto,
+  ) {
     return this.equipoService.addDeportista(+id, addDeportistaDto);
   }
 

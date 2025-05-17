@@ -29,6 +29,4 @@ export class CreateEquipoDto {
   @IsNotEmpty()
   @IsNumber()
   id_club: number;
-
-  
 }
