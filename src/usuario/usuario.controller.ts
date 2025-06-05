@@ -14,13 +14,13 @@ import { ChangePasswordDto } from './dto/ChangePasswordDto';
 @ApiTags('usuario')
 @Controller('usuario')
 
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)//borrar para crear el primer usuario
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
-  @ApiBearerAuth('mi secreto1')
   
+  @ApiBearerAuth('mi secreto1')//borrar para crear el primer usuario
   @Post()
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)//borrar para crear el primer usuario
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
@@ -31,7 +31,7 @@ export class UsuarioController {
 
   @ApiBearerAuth('mi secreto1')
   @Get()
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios' })
   findAll() {
@@ -40,7 +40,7 @@ export class UsuarioController {
 
   
   @Get(':id')
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
@@ -50,7 +50,7 @@ export class UsuarioController {
 
   
   @Get('role/:roleId')
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Obtener usuarios por rol' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios con el rol especificado' })
   findByRole(@Param('roleId') roleId: string) {
@@ -59,7 +59,7 @@ export class UsuarioController {
 
   
   @Patch(':id')
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Actualizar un usuario' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
@@ -83,7 +83,7 @@ export class UsuarioController {
 
   
   @Delete(':id')
-  @Roles(RoleType.ADMIN)
+  @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Eliminar un usuario' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })

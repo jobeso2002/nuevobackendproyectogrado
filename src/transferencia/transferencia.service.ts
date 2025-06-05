@@ -7,8 +7,7 @@ import { Repository } from 'typeorm';
 import { Deportista } from '../deportista/entities/deportista.entity';
 import { Club } from '../club/entities/club.entity';
 import { Usuario } from '../usuario/entities/usuario.entity';
-import { Equipo } from '../equipo/entities/equipo.entity';
-import { EquipoDeportista } from '../equipo/entities/equipo-deportista.entity';
+import { ClubDeportista } from '../club/entities/clubdeportista';
 
 @Injectable()
 export class TransferenciaService {
@@ -21,10 +20,8 @@ export class TransferenciaService {
     private readonly clubRepository: Repository<Club>,
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-    @InjectRepository(Equipo)
-    private readonly equipoRepository: Repository<Equipo>,
-    @InjectRepository(EquipoDeportista)
-    private readonly equipoDeportistaRepository: Repository<EquipoDeportista>,
+    @InjectRepository(ClubDeportista)
+    private readonly clubDeportistaRepository: Repository<ClubDeportista>,
   ) {}
 
   async create(createTransferenciaDto: CreateTransferenciaDto): Promise<Transferencia> {
@@ -65,13 +62,13 @@ export class TransferenciaService {
     }
 
     // Verificar que el deportista pertenece al club de origen
-    const perteneceAlClub = await this.equipoDeportistaRepository
-      .createQueryBuilder('ed')
-      .innerJoin('ed.equipo', 'equipo')
-      .where('ed.id_deportista = :idDeportista', { idDeportista: createTransferenciaDto.id_deportista })
-      .andWhere('equipo.id_club = :idClubOrigen', { idClubOrigen: createTransferenciaDto.id_club_origen })
-      .andWhere('ed.estado = :estado', { estado: 'activo' })
-      .getExists();
+    const perteneceAlClub = await this.clubDeportistaRepository.findOne({
+      where: {
+        deportista: { id: createTransferenciaDto.id_deportista },
+        club: { id: createTransferenciaDto.id_club_origen },
+        estado: 'activo',
+      },
+    });
 
     if (!perteneceAlClub) {
       throw new ConflictException('El deportista no pertenece al club de origen especificado');
@@ -101,7 +98,7 @@ export class TransferenciaService {
 
     return this.transferenciaRepository.save(transferencia);
   }
-
+  
   async findAll(): Promise<Transferencia[]> {
     return this.transferenciaRepository.find({
       relations: ['deportista', 'clubOrigen', 'clubDestino', 'usuarioRegistra'],
@@ -167,38 +164,27 @@ export class TransferenciaService {
 
     // 1. Cambiar estado de la transferencia
     transferencia.estado = 'aprobada';
-    transferencia.usuarioRegistra = usuarioAprueba;
+    transferencia.usuarioAprueba = usuarioAprueba;
     transferencia.fechaAprobacion = new Date();
 
-    // 2. Actualizar equipos del deportista (quitar de equipos del club origen)
-    await this.equipoDeportistaRepository
-      .createQueryBuilder()
-      .update(EquipoDeportista)
-      .set({ estado: 'inactivo' })
-      .where('id_deportista = :idDeportista', { idDeportista: transferencia.deportista.id })
-      .andWhere('id_equipo IN (SELECT id FROM equipo WHERE id_club = :idClubOrigen)', { 
-        idClubOrigen: transferencia.clubOrigen.id 
-      })
-      .execute();
-
-    // 3. Agregar al equipo principal del club destino
-    const equipoPrincipal = await this.equipoRepository.findOne({
-      where: { 
-        club: { id: transferencia.clubDestino.id },
-        rama: this.getRamaPorEdad(transferencia.deportista.fechaNacimiento),
-        categoria: transferencia.deportista.genero === 'masculino' ? 'masculino' : 'femenino'
+    // 2. Actualizar relación club-deportista (inactivar en club origen)
+    await this.clubDeportistaRepository.update(
+      { 
+        deportista: { id: transferencia.deportista.id },
+        club: { id: transferencia.clubOrigen.id },
+        estado: 'activo'
       },
-    });
+      { estado: 'inactivo' }
+    );
 
-    if (equipoPrincipal) {
-      const nuevaRelacion = this.equipoDeportistaRepository.create({
-        equipo: equipoPrincipal,
-        deportista: transferencia.deportista,
-        fechaIngreso: new Date(),
-        estado: 'activo',
-      });
-      await this.equipoDeportistaRepository.save(nuevaRelacion);
-    }
+    // 3. Crear nueva relación con club destino
+    const nuevaRelacion = this.clubDeportistaRepository.create({
+      club: transferencia.clubDestino,
+      deportista: transferencia.deportista,
+      fechaIngreso: new Date(),
+      estado: 'activo',
+    });
+    await this.clubDeportistaRepository.save(nuevaRelacion);
 
     return this.transferenciaRepository.save(transferencia);
   }
@@ -253,13 +239,4 @@ export class TransferenciaService {
     });
   }
 
-  private getRamaPorEdad(fechaNacimiento: Date): string {
-    const hoy = new Date();
-    const edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-    
-    if (edad < 15) return 'sub-15';
-    if (edad < 17) return 'sub-17';
-    if (edad < 19) return 'sub-19';
-    return 'mayores';
-  }
 }

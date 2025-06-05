@@ -43,13 +43,13 @@ export class CreatePartidoDto {
   @IsNumber()
   id_evento: number;
 
-  @ApiProperty({ example: 1, description: 'ID del equipo local' })
+  @ApiProperty({ example: 1, description: 'ID del club local' })
   @IsNotEmpty()
   @IsNumber()
-  id_equipo_local: number;
+  id_club_local: number;
 
-  @ApiProperty({ example: 2, description: 'ID del equipo visitante' })
+  @ApiProperty({ example: 2, description: 'ID del club visitante' })
   @IsNotEmpty()
   @IsNumber()
-  id_equipo_visitante: number;
+  id_club_visitante: number;
 }

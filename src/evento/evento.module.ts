@@ -7,7 +7,8 @@ import { AuthModule } from '../auth/auth.module';
 import { UsuarioModule } from '../usuario/usuario.module';
 import { InscripcionModule } from '../inscripcion/inscripcion.module';
 import { PartidoModule } from '../partido/partido.module';
-import { EquipoModule } from '../equipo/equipo.module';
+import { ClubModule } from '../club/club.module';
+
 
 @Module({
   imports: [
@@ -16,8 +17,7 @@ import { EquipoModule } from '../equipo/equipo.module';
     forwardRef(() => UsuarioModule),
     forwardRef(() => InscripcionModule),
     forwardRef(() => PartidoModule),
-    forwardRef(() => EquipoModule),
-    
+    forwardRef(() => ClubModule),
   ],
   controllers: [EventoController],
   providers: [EventoService],

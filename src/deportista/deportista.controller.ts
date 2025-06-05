@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { DeportistaService } from './deportista.service';
 import { CreateDeportistaDto } from './dto/create-deportista.dto';
 import { UpdateDeportistaDto } from './dto/update-deportista.dto';
@@ -8,11 +8,14 @@ import { CreateContactoDto } from '../contacto/dto/create-contacto.dto';
 import { Authen } from '../auth/decorators/auth.decorator';
 import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
+import { AuthGuard } from '../auth/guard/auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
 
 @Controller('deportista')
 export class DeportistaController {
   constructor(private readonly deportistaService: DeportistaService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
   @ApiBearerAuth('mi secreto1')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @Post()
@@ -28,15 +31,13 @@ export class DeportistaController {
   @Get()
   @ApiOperation({ summary: 'Obtener todos los deportistas activos' })
   @ApiResponse({ status: 200, description: 'Lista de deportistas' })
-  @ApiQuery({ name: 'equipo', required: false, description: 'Filtrar por ID de equipo' })
   @ApiQuery({ name: 'club', required: false, description: 'Filtrar por ID de club' })
   @ApiQuery({ name: 'genero', required: false, description: 'Filtrar por género (masculino, femenino)' })
   async findAll(
-    @Query('equipo') equipoId?: number,
     @Query('club') clubId?: number,
     @Query('genero') genero?: string,
   ) {
-    return this.deportistaService.findAll(equipoId, clubId, genero);
+    return this.deportistaService.findAll(clubId, genero);
   }
 
   @Get(':id')
@@ -94,12 +95,12 @@ export class DeportistaController {
     return this.deportistaService.createTransferencia(+id, createTransferenciaDto);
   }
 
-  @Get(':id/equipos')
-  @ApiOperation({ summary: 'Obtener equipos del deportista' })
-  @ApiResponse({ status: 200, description: 'Lista de equipos' })
+  @Get(':id/clubs')
+  @ApiOperation({ summary: 'Obtener clubs del deportista' })
+  @ApiResponse({ status: 200, description: 'Lista de clubs con fechas de ingreso' })
   @ApiResponse({ status: 404, description: 'Deportista no encontrado' })
-  getEquipos(@Param('id') id: string) {
-    return this.deportistaService.getEquipos(+id);
+  getClubs(@Param('id') id: string) {
+    return this.deportistaService.getClubs(+id);
   }
 
   @Get(':id/transferencias')

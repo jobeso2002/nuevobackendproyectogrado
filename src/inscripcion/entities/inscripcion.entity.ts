@@ -1,4 +1,4 @@
-import { Equipo } from '../../equipo/entities/equipo.entity';
+import { Club } from '../../club/entities/club.entity';
 import { Evento } from '../../evento/entities/evento.entity';
 import { Usuario } from '../../usuario/entities/usuario.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -22,20 +22,21 @@ export class Inscripcion {
   })
   estado: string;
 
-  @ManyToOne(() => Evento, evento => evento.inscripciones)
+  @ManyToOne(() => Evento, (evento) => evento.inscripciones)
   evento: Evento;
 
-  @ManyToOne(() => Equipo, equipo => equipo.inscripciones)
-  equipo: Equipo;
-
-  @ManyToOne(() => Usuario, usuario => usuario.inscripcionesRegistradas)
+  @ManyToOne(() => Usuario, (usuario) => usuario.inscripcionesRegistradas)
   usuarioRegistra: Usuario;
 
   // Nuevos campos:
-  @ManyToOne(() => Usuario, (usuario) => usuario.inscripcionesAprobadas, { nullable: true })
+  @ManyToOne(() => Usuario, (usuario) => usuario.inscripcionesAprobadas, {
+    nullable: true,
+  })
   usuarioAprueba?: Usuario;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.inscripcionesRechazadas, { nullable: true })
+  @ManyToOne(() => Usuario, (usuario) => usuario.inscripcionesRechazadas, {
+    nullable: true,
+  })
   usuarioRechaza?: Usuario;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -43,4 +44,7 @@ export class Inscripcion {
 
   @Column({ type: 'timestamp', nullable: true })
   fechaRechazo?: Date;
+
+  @ManyToOne(() => Club, (club) => club.inscripciones)
+  club: Club;
 }

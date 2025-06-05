@@ -1,9 +1,14 @@
-import { EquipoDeportista } from '../../equipo/entities/equipo-deportista.entity';
 import { Contacto } from '../../contacto/entities/contacto.entity';
-import { Equipo } from '../../equipo/entities/equipo.entity';
 import { EstadisticaPartido } from '../../estadistica-partido/entities/estadistica-partido.entity';
 import { Transferencia } from '../../transferencia/entities/transferencia.entity';
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ClubDeportista } from '../../club/entities/clubdeportista';
 
 @Entity()
 export class Deportista {
@@ -44,6 +49,15 @@ export class Deportista {
   @Column({ length: 255, nullable: true })
   foto: string;
 
+  @Column({
+    name: 'tipo_sangre',
+    type: 'enum',
+    enum: ['A+', 'A-', 'B+', 'B-','AB+','AB-','O+','O-'],
+    nullable: false,
+  })
+  tipo_sangre: string;
+
+
   @Column({ length: 20, nullable: false })
   telefono: string;
 
@@ -60,17 +74,25 @@ export class Deportista {
   })
   estado: string;
 
-  
+  @Column({
+    type: 'enum',
+    enum: ['armador', 'central', 'punta', 'libero', 'opuesto'],
+    nullable: false,
+  })
+  posicion: string;
 
-  @OneToMany(() => Contacto, contacto => contacto.deportista)
+  @Column({ nullable: true })
+  numero_camiseta: number;
+
+  @OneToMany(() => Contacto, (contacto) => contacto.deportista)
   contactos: Contacto[];
 
-  @OneToMany(() => Transferencia, transferencia => transferencia.deportista)
+  @OneToMany(() => Transferencia, (transferencia) => transferencia.deportista)
   transferencias: Transferencia[];
 
-  @OneToMany(() => EstadisticaPartido, estadistica => estadistica.deportista)
+  @OneToMany(() => EstadisticaPartido, (estadistica) => estadistica.deportista)
   estadisticas: EstadisticaPartido[];
 
-  @OneToMany(() => EquipoDeportista, (equipoDeportista) => equipoDeportista.deportista)
-  equipoDeportistas: EquipoDeportista[];
+  @OneToMany(() => ClubDeportista, (clubDeportista) => clubDeportista.deportista)
+  clubDeportistas: ClubDeportista[];
 }

@@ -3,10 +3,10 @@ import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Evento } from './entities/evento.entity';
-import { Usuario } from 'src/usuario/entities/usuario.entity';
-import { Inscripcion } from 'src/inscripcion/entities/inscripcion.entity';
-import { Equipo } from 'src/equipo/entities/equipo.entity';
+import { Usuario } from '../usuario/entities/usuario.entity';
+import { Inscripcion } from '../inscripcion/entities/inscripcion.entity';
 import { LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import { Club } from '../club/entities/club.entity';
 
 @Injectable()
 export class EventoService {
@@ -17,8 +17,8 @@ export class EventoService {
     private readonly usuarioRepository: Repository<Usuario>,
     @InjectRepository(Inscripcion)
     private readonly inscripcionRepository: Repository<Inscripcion>,
-    @InjectRepository(Equipo)
-    private readonly equipoRepository: Repository<Equipo>,
+    @InjectRepository(Club)
+    private readonly clubRepository: Repository<Club>,
   ) {}
 
   async create(createEventoDto: CreateEventoDto): Promise<Evento> {
@@ -67,7 +67,7 @@ export class EventoService {
   async findOne(id: number): Promise<Evento> {
     const evento = await this.eventoRepository.findOne({
       where: { id },
-      relations: ['organizador', 'inscripciones', 'inscripciones.equipo', 'partidos', 'partidos.equipoLocal', 'partidos.equipoVisitante'],
+      relations: ['organizador', 'inscripciones', 'inscripciones.club', 'partidos', 'partidos.clubLocal', 'partidos.equipoVisitante'],
     });
 
     if (!evento) {
@@ -139,38 +139,38 @@ export class EventoService {
     return this.eventoRepository.save(evento);
   }
 
-  async inscribirEquipo(idEvento: number, idEquipo: number, idUsuarioRegistra: number): Promise<Inscripcion> {
+  async inscribirClub(idEvento: number, idClub: number, idUsuarioRegistra: number): Promise<Inscripcion> {
     const evento = await this.findOne(idEvento);
-    const equipo = await this.equipoRepository.findOne({
-      where: { id: idEquipo },
+    const club = await this.clubRepository.findOne({
+      where: { id: idClub },
     });
     const usuario = await this.usuarioRepository.findOne({
       where: { id: idUsuarioRegistra },
     });
 
-    if (!equipo) {
-      throw new NotFoundException(`Equipo con ID ${idEquipo} no encontrado`);
+    if (!club) {
+      throw new NotFoundException(`Club con ID ${idClub} no encontrado`);
     }
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${idUsuarioRegistra} no encontrado`);
     }
 
-    // Verificar si el equipo ya está inscrito
+    // Verificar si el club ya está inscrito
     const inscripcionExistente = await this.inscripcionRepository.findOne({
       where: {
         evento: { id: idEvento },
-        equipo: { id: idEquipo },
+        club: { id: idClub },
       },
     });
 
     if (inscripcionExistente) {
-      throw new ConflictException('El equipo ya está inscrito en este evento');
+      throw new ConflictException('El club ya está inscrito en este evento');
     }
 
     const inscripcion = this.inscripcionRepository.create({
       evento,
-      equipo,
+      club,
       usuarioRegistra: usuario,
       estado: 'pendiente',
     });
@@ -181,7 +181,7 @@ export class EventoService {
   async aprobarInscripcion(idInscripcion: number, idUsuarioAprueba: number): Promise<Inscripcion> {
     const inscripcion = await this.inscripcionRepository.findOne({
       where: { id: idInscripcion },
-      relations: ['evento', 'equipo', 'usuarioRegistra'],
+      relations: ['evento', 'club', 'usuarioRegistra'],
     });
 
     if (!inscripcion) {
@@ -279,7 +279,7 @@ export class EventoService {
 
     return this.inscripcionRepository.find({
       where,
-      relations: ['equipo', 'equipo.club', 'usuarioRegistra', 'usuarioAprueba'],
+      relations: ['club', 'usuarioRegistra', 'usuarioAprueba'],
     });
   }
 

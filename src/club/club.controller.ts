@@ -98,13 +98,6 @@ export class ClubController {
     return this.clubService.remove(+id);
   }
 
-  @Get(':id/equipos')
-  @ApiOperation({ summary: 'Obtener equipos de un club' })
-  @ApiResponse({ status: 200, description: 'Lista de equipos del club' })
-  @ApiResponse({ status: 404, description: 'Club no encontrado' })
-  getEquipos(@Param('id') id: string) {
-    return this.clubService.getEquiposByClub(+id);
-  }
 
   @Get(':id/transferencias')
   @ApiOperation({ summary: 'Obtener transferencias de un club' })

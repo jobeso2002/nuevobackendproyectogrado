@@ -6,7 +6,6 @@ import { AuthModule } from './auth/auth.module';
 import { PermisoModule } from './permiso/permiso.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { ClubModule } from './club/club.module';
-import { EquipoModule } from './equipo/equipo.module';
 import { DeportistaModule } from './deportista/deportista.module';
 import { ContactoModule } from './contacto/contacto.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
@@ -36,7 +35,6 @@ import { EstadisticaPartidoModule } from './estadistica-partido/estadistica-part
     PermisoModule,
     UsuarioModule,
     ClubModule,
-    EquipoModule,
     DeportistaModule,
     ContactoModule,
     TransferenciaModule,

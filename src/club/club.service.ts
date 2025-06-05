@@ -91,10 +91,13 @@ export class ClubService {
       id: club.id,
       nombre: club.nombre,
       fundacion: club.fundacion,
+      rama:club.rama,
+      categoria:club.categoria,
       direccion: club.direccion,
       telefono: club.telefono,
       email: club.email,
       logo: club.logo,
+
       estado: club.estado,
       responsable: {
         id: club.responsable.id,
@@ -155,16 +158,6 @@ export class ClubService {
     return this.mapClubToResponseDto(await this.clubRepository.save(club));
   }
 
-  async getEquiposByClub(id: number): Promise<Club> {
-    const club = await this.clubRepository.findOne({
-      where: { id },
-      relations: ['equipos'],
-    });
-    if (!club) {
-      throw new NotFoundException(`Club con ID ${id} no encontrado`);
-    }
-    return club;
-  }
 
   async getTransferenciasByClub(id: number): Promise<Club> {
     const club = await this.clubRepository.findOne({
@@ -177,32 +170,25 @@ export class ClubService {
     return club;
   }
 
+  // Modificar el método getDeportistasByClub
   async getDeportistasByClub(id: number): Promise<any> {
     const club = await this.clubRepository.findOne({
       where: { id },
-      relations: ['equipos', 'equipos.deportistas'],
+      relations: ['clubDeportistas', 'clubDeportistas.deportista'],
     });
 
     if (!club) {
       throw new NotFoundException(`Club con ID ${id} no encontrado`);
     }
 
-    // Aplanar la lista de deportistas de todos los equipos
-    const deportistas = club.equipos.flatMap(
-      (equipo) => equipo.equipoDeportistas,
-    );
-
-    // Eliminar duplicados (en caso de que un deportista esté en varios equipos)
-    const uniqueDeportistas = [
-      ...new Map(deportistas.map((item) => [item.id, item])).values(),
-    ];
+    const deportistas = club.clubDeportistas.map((rel) => rel.deportista);
 
     return {
       club: {
         id: club.id,
         nombre: club.nombre,
       },
-      deportistas: uniqueDeportistas,
+      deportistas: deportistas,
     };
   }
 }

@@ -5,19 +5,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Club } from './entities/club.entity';
 import { UsuarioModule } from '../usuario/usuario.module';
 import { AuthModule } from '../auth/auth.module';
-import { EquipoModule } from '../equipo/equipo.module';
 import { TransferenciaModule } from '../transferencia/transferencia.module';
+import { ClubDeportista } from './entities/clubdeportista';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Club]),
+    TypeOrmModule.forFeature([Club, ClubDeportista]),
     forwardRef(() => AuthModule),
     forwardRef(()=> UsuarioModule),
-    forwardRef(() => EquipoModule),
     forwardRef(() => TransferenciaModule),
   ],
   controllers: [ClubController],
   providers: [ClubService],
-  exports: [TypeOrmModule.forFeature([Club]), ClubService],
+  exports: [TypeOrmModule.forFeature([Club, ClubDeportista]), ClubService],
 })
 export class ClubModule {}

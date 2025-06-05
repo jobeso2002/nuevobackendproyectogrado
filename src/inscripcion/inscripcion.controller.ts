@@ -17,9 +17,9 @@ export class InscripcionController {
   @ApiOperation({ summary: 'Crear una nueva inscripción' })
   @ApiResponse({ status: 201, description: 'Inscripción creada exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 404, description: 'Evento, equipo o usuario no encontrado' })
-  @ApiResponse({ status: 409, description: 'El equipo ya está inscrito en este evento' })
-  @ApiResponse({ status: 403, description: 'No se pueden inscribir equipos en eventos no planificados' })
+  @ApiResponse({ status: 404, description: 'Evento, club o usuario no encontrado' })
+  @ApiResponse({ status: 409, description: 'El club ya está inscrito en este evento' })
+  @ApiResponse({ status: 403, description: 'No se pueden inscribir clubs en eventos no planificados' })
   create(@Body() createInscripcionDto: CreateInscripcionDto) {
     return this.inscripcionService.create(createInscripcionDto);
   }
@@ -28,18 +28,18 @@ export class InscripcionController {
   @ApiOperation({ summary: 'Obtener todas las inscripciones' })
   @ApiResponse({ status: 200, description: 'Lista de inscripciones' })
   @ApiQuery({ name: 'evento', required: false, description: 'Filtrar por ID de evento' })
-  @ApiQuery({ name: 'equipo', required: false, description: 'Filtrar por ID de equipo' })
+  @ApiQuery({ name: 'club', required: false, description: 'Filtrar por ID de club' }) // Cambiado de equipo a club
   @ApiQuery({ name: 'estado', required: false, description: 'Filtrar por estado (pendiente, aprobada, rechazada)' })
   async findAll(
     @Query('evento') eventoId?: number,
-    @Query('equipo') equipoId?: number,
+    @Query('club') clubId?: number, // Cambiado de equipoId a clubId
     @Query('estado') estado?: string,
   ) {
     if (eventoId) {
       return this.inscripcionService.getInscripcionesByEvento(eventoId, estado);
     }
-    if (equipoId) {
-      return this.inscripcionService.getInscripcionesByEquipo(equipoId);
+    if (clubId) {
+      return this.inscripcionService.getInscripcionesByClub(clubId); // Cambiado de getInscripcionesByEquipo a getInscripcionesByClub
     }
     return this.inscripcionService.findAll();
   }

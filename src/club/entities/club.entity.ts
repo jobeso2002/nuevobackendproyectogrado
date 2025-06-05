@@ -1,11 +1,19 @@
-import { Equipo } from "../../equipo/entities/equipo.entity";
-import { Transferencia } from "../../transferencia/entities/transferencia.entity";
-import { Usuario } from "../../usuario/entities/usuario.entity";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Inscripcion } from '../../inscripcion/entities/inscripcion.entity';
+import { Transferencia } from '../../transferencia/entities/transferencia.entity';
+import { Usuario } from '../../usuario/entities/usuario.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Partido } from '../../partido/entities/partido.entity';
+import { ClubDeportista } from './clubdeportista';
 
 @Entity()
 export class Club {
-    @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ length: 100 })
@@ -26,22 +34,43 @@ export class Club {
   @Column({ length: 255, nullable: true })
   logo: string;
 
-  @Column({ 
+  @Column({
+    type: 'enum',
+    enum: ['masculino', 'femenino', 'mixto'],
+  })
+  categoria: string;
+
+  @Column({
+    type: 'enum',
+    enum: ['sub-15', 'sub-17', 'sub-19', 'mayores', 'juvenil', 'infantil'],
+  })
+  rama: string;
+
+  @Column({
     type: 'enum',
     enum: ['activo', 'inactivo'],
-    default: 'activo'
+    default: 'activo',
   })
   estado: string;
 
-  @ManyToOne(() => Usuario, usuario => usuario.clubesResponsables)
+  @ManyToOne(() => Usuario, (usuario) => usuario.clubesResponsables)
   responsable: Usuario;
 
-  @OneToMany(() => Equipo, equipo => equipo.club)
-  equipos: Equipo[];
+  @OneToMany(() => Inscripcion, (inscripcion) => inscripcion.club)
+  inscripciones: Inscripcion[];
 
-  @OneToMany(() => Transferencia, transferencia => transferencia.clubOrigen)
+  @OneToMany(() => Transferencia, (transferencia) => transferencia.clubOrigen)
   transferenciasSalientes: Transferencia[];
 
-  @OneToMany(() => Transferencia, transferencia => transferencia.clubDestino)
+  @OneToMany(() => Transferencia, (transferencia) => transferencia.clubDestino)
   transferenciasEntrantes: Transferencia[];
+
+  @OneToMany(() => Partido, (partido) => partido.clubLocal)
+  partidosLocal: Partido[];
+
+  @OneToMany(() => Partido, (partido) => partido.clubVisitante)
+  partidosVisitante: Partido[];
+
+  @OneToMany(() => ClubDeportista, (clubDeportista) => clubDeportista.club)
+  clubDeportistas: ClubDeportista[];
 }

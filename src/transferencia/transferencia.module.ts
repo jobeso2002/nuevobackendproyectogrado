@@ -7,7 +7,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ClubModule } from '../club/club.module';
 import { DeportistaModule } from '../deportista/deportista.module';
 import { UsuarioModule } from '../usuario/usuario.module';
-import { EquipoModule } from '../equipo/equipo.module';
+
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { EquipoModule } from '../equipo/equipo.module';
     forwardRef(() => ClubModule),
     forwardRef(() => DeportistaModule),
     forwardRef(() => UsuarioModule),
-    forwardRef(() => EquipoModule),
+    
   ],
   controllers: [TransferenciaController],
   providers: [TransferenciaService],

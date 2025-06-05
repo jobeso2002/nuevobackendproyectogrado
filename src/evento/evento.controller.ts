@@ -74,18 +74,18 @@ export class EventoController {
     return this.eventoService.remove(+id);
   }
 
-  @Post(':idEvento/inscribir/:idEquipo')
-  @ApiOperation({ summary: 'Inscribir un equipo en un evento' })
+  @Post(':idEvento/inscribir/:idClub')
+  @ApiOperation({ summary: 'Inscribir un club en un evento' })
   @ApiResponse({ status: 201, description: 'Inscripción creada' })
-  @ApiResponse({ status: 404, description: 'Evento, equipo o usuario no encontrado' })
-  @ApiResponse({ status: 409, description: 'El equipo ya está inscrito' })
+  @ApiResponse({ status: 404, description: 'Evento, club o usuario no encontrado' })
+  @ApiResponse({ status: 409, description: 'El club ya está inscrito' })
   @ApiQuery({ name: 'idUsuario', description: 'ID del usuario que registra la inscripción' })
-  inscribirEquipo(
+  inscribirClub(
     @Param('idEvento') idEvento: string,
-    @Param('idEquipo') idEquipo: string,
+    @Param('idClub') idClub: string,
     @Query('idUsuario') idUsuario: string,
   ) {
-    return this.eventoService.inscribirEquipo(+idEvento, +idEquipo, +idUsuario);
+    return this.eventoService.inscribirClub(+idEvento, +idClub, +idUsuario);
   }
 
   @Post('inscripciones/:idInscripcion/aprobar')

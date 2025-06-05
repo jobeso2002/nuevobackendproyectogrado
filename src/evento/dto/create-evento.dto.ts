@@ -41,5 +41,4 @@ export class CreateEventoDto {
   @IsNotEmpty()
   @IsNumber()
   id_usuario_organizador: number;
-  
 }

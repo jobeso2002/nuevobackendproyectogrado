@@ -4,9 +4,9 @@ import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Inscripcion } from './entities/inscripcion.entity';
 import { Evento } from '../evento/entities/evento.entity';
-import { Equipo } from '../equipo/entities/equipo.entity';
 import { Usuario } from '../usuario/entities/usuario.entity';
 import { Repository } from 'typeorm';
+import { Club } from '../club/entities/club.entity';
 
 @Injectable()
 export class InscripcionService {
@@ -15,14 +15,13 @@ export class InscripcionService {
     private readonly inscripcionRepository: Repository<Inscripcion>,
     @InjectRepository(Evento)
     private readonly eventoRepository: Repository<Evento>,
-    @InjectRepository(Equipo)
-    private readonly equipoRepository: Repository<Equipo>,
+    @InjectRepository(Club) 
+    private readonly clubRepository: Repository<Club>,
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
   async create(createInscripcionDto: CreateInscripcionDto): Promise<Inscripcion> {
-    // Verificar que el evento existe
     const evento = await this.eventoRepository.findOne({
       where: { id: createInscripcionDto.id_evento },
     });
@@ -31,16 +30,14 @@ export class InscripcionService {
       throw new NotFoundException(`Evento con ID ${createInscripcionDto.id_evento} no encontrado`);
     }
 
-    // Verificar que el equipo existe
-    const equipo = await this.equipoRepository.findOne({
-      where: { id: createInscripcionDto.id_equipo },
+    const club = await this.clubRepository.findOne({
+      where: { id: createInscripcionDto.id_club },
     });
 
-    if (!equipo) {
-      throw new NotFoundException(`Equipo con ID ${createInscripcionDto.id_equipo} no encontrado`);
+    if (!club) {
+      throw new NotFoundException(`Club con ID ${createInscripcionDto.id_club} no encontrado`);
     }
 
-    // Verificar que el usuario que registra existe
     const usuarioRegistra = await this.usuarioRepository.findOne({
       where: { id: createInscripcionDto.id_usuario_registra },
     });
@@ -49,26 +46,24 @@ export class InscripcionService {
       throw new NotFoundException(`Usuario con ID ${createInscripcionDto.id_usuario_registra} no encontrado`);
     }
 
-    // Verificar que el equipo no está ya inscrito en el evento
     const inscripcionExistente = await this.inscripcionRepository.findOne({
       where: {
         evento: { id: createInscripcionDto.id_evento },
-        equipo: { id: createInscripcionDto.id_equipo },
+        club: { id: createInscripcionDto.id_club },
       },
     });
 
     if (inscripcionExistente) {
-      throw new ConflictException('El equipo ya está inscrito en este evento');
+      throw new ConflictException('El club ya está inscrito en este evento');
     }
 
-    // Verificar que el evento está en estado planificado
     if (evento.estado !== 'planificado') {
-      throw new ForbiddenException('Solo se pueden inscribir equipos en eventos planificados');
+      throw new ForbiddenException('Solo se pueden inscribir clubs en eventos planificados');
     }
 
     const inscripcion = this.inscripcionRepository.create({
       evento,
-      equipo,
+      club,
       usuarioRegistra,
       estado: 'pendiente',
     });
@@ -78,7 +73,7 @@ export class InscripcionService {
 
   async findAll(): Promise<Inscripcion[]> {
     return this.inscripcionRepository.find({
-      relations: ['evento', 'equipo', 'usuarioRegistra', 'usuarioAprueba'],
+      relations: ['evento', 'club', 'usuarioRegistra', 'usuarioAprueba'],
       order: { fechaInscripcion: 'DESC' },
     });
   }
@@ -86,7 +81,7 @@ export class InscripcionService {
   async findOne(id: number): Promise<Inscripcion> {
     const inscripcion = await this.inscripcionRepository.findOne({
       where: { id },
-      relations: ['evento', 'equipo', 'equipo.club', 'usuarioRegistra', 'usuarioAprueba', 'usuarioRechaza'],
+      relations: ['evento', 'club', 'usuarioRegistra', 'usuarioAprueba', 'usuarioRechaza'],
     });
 
     if (!inscripcion) {
@@ -105,20 +100,20 @@ export class InscripcionService {
     }
 
     // Verificar si se está cambiando el equipo
-    if (updateInscripcionDto.id_equipo && updateInscripcionDto.id_equipo !== inscripcion.equipo.id) {
-      const equipo = await this.equipoRepository.findOne({
-        where: { id: updateInscripcionDto.id_equipo },
+    if (updateInscripcionDto.id_club && updateInscripcionDto.id_club !== inscripcion.club.id) {
+      const equipo = await this.clubRepository.findOne({
+        where: { id: updateInscripcionDto.id_club },
       });
 
       if (!equipo) {
-        throw new NotFoundException(`Equipo con ID ${updateInscripcionDto.id_equipo} no encontrado`);
+        throw new NotFoundException(`Equipo con ID ${updateInscripcionDto.id_club} no encontrado`);
       }
 
       // Verificar que el nuevo equipo no está ya inscrito
       const inscripcionExistente = await this.inscripcionRepository.findOne({
         where: {
           evento: { id: inscripcion.evento.id },
-          equipo: { id: updateInscripcionDto.id_equipo },
+          club: { id: updateInscripcionDto.id_club },
         },
       });
 
@@ -126,7 +121,7 @@ export class InscripcionService {
         throw new ConflictException('El equipo ya está inscrito en este evento');
       }
 
-      inscripcion.equipo = equipo;
+      inscripcion.club = equipo;
     }
 
     return this.inscripcionRepository.save(inscripcion);
@@ -196,18 +191,18 @@ export class InscripcionService {
 
     return this.inscripcionRepository.find({
       where,
-      relations: ['equipo', 'equipo.club', 'usuarioRegistra', 'usuarioAprueba'],
+      relations: ['club', 'usuarioRegistra', 'usuarioAprueba'],
     });
   }
 
-  async getInscripcionesByEquipo(idEquipo: number): Promise<Inscripcion[]> {
-    const equipoExists = await this.equipoRepository.exist({ where: { id: idEquipo } });
-    if (!equipoExists) {
-      throw new NotFoundException(`Equipo con ID ${idEquipo} no encontrado`);
+  async getInscripcionesByClub(idClub: number): Promise<Inscripcion[]> {
+    const clubExists = await this.clubRepository.exist({ where: { id: idClub } });
+    if (!clubExists) {
+      throw new NotFoundException(`Club con ID ${idClub} no encontrado`);
     }
 
     return this.inscripcionRepository.find({
-      where: { equipo: { id: idEquipo } },
+      where: { club: { id: idClub } },
       relations: ['evento', 'usuarioRegistra'],
       order: { fechaInscripcion: 'DESC' },
     });

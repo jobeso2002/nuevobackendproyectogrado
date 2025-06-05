@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsNotEmpty, IsNumber, IsString, MinLength } from 'class-validator';
+import {
+  IsDate,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateClubDto {
   @ApiProperty({ example: 'los ganadores' })
@@ -12,6 +20,14 @@ export class CreateClubDto {
   @Type(() => Date)
   @IsDate()
   fundacion: Date;
+
+  @ApiProperty({ example: 'sub-15', enum: ['sub-15', 'sub-17', 'sub-19', 'mayores', 'juvenil', 'infantil'] })
+  @IsString()
+  @IsIn(['sub-15', 'sub-17', 'sub-19', 'mayores', 'juvenil', 'infantil'])
+  rama: string;
+
+  @ApiProperty({ example: 'masculino' })
+  categoria: string;
 
   @ApiProperty({ example: 'calle 1 #03' })
   @IsString()

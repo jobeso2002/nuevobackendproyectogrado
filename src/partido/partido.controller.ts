@@ -18,8 +18,8 @@ export class PartidoController {
   @ApiOperation({ summary: 'Crear un nuevo partido' })
   @ApiResponse({ status: 201, description: 'Partido creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 404, description: 'Evento, equipo o árbitro no encontrado' })
-  @ApiResponse({ status: 409, description: 'Conflicto con otro partido o equipos no válidos' })
+  @ApiResponse({ status: 404, description: 'Evento, club o árbitro no encontrado' })
+  @ApiResponse({ status: 409, description: 'Conflicto con otro partido o clubs no válidos' })
   create(@Body() createPartidoDto: CreatePartidoDto) {
     return this.partidoService.create(createPartidoDto);
   }
@@ -28,20 +28,20 @@ export class PartidoController {
   @ApiOperation({ summary: 'Obtener todos los partidos' })
   @ApiResponse({ status: 200, description: 'Lista de partidos' })
   @ApiQuery({ name: 'evento', required: false, description: 'Filtrar por ID de evento' })
-  @ApiQuery({ name: 'equipo', required: false, description: 'Filtrar por ID de equipo' })
+  @ApiQuery({ name: 'club', required: false, description: 'Filtrar por ID de club' }) // Cambiado de equipo a club
   @ApiQuery({ name: 'fechaInicio', required: false, description: 'Fecha de inicio para rango (YYYY-MM-DD)' })
   @ApiQuery({ name: 'fechaFin', required: false, description: 'Fecha de fin para rango (YYYY-MM-DD)' })
   async findAll(
     @Query('evento') eventoId?: number,
-    @Query('equipo') equipoId?: number,
+    @Query('club') clubId?: number, // Cambiado de equipoId a clubId
     @Query('fechaInicio') fechaInicio?: string,
     @Query('fechaFin') fechaFin?: string,
   ) {
     if (eventoId) {
       return this.partidoService.getPartidosByEvento(eventoId);
     }
-    if (equipoId) {
-      return this.partidoService.getPartidosByEquipo(equipoId);
+    if (clubId) {
+      return this.partidoService.getPartidosByClub(clubId); // Cambiado de getPartidosByEquipo a getPartidosByClub
     }
     if (fechaInicio && fechaFin) {
       return this.partidoService.getPartidosByFecha(fechaInicio, fechaFin);

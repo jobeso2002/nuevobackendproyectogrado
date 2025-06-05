@@ -1,4 +1,4 @@
-import { Equipo } from '../../equipo/entities/equipo.entity';
+import { Club } from '../../club/entities/club.entity';
 import { EstadisticaPartido } from '../../estadistica-partido/entities/estadistica-partido.entity';
 import { Evento } from '../../evento/entities/evento.entity';
 import { Resultado } from '../../resultado/entities/resultado.entity';
@@ -39,12 +39,6 @@ export class Partido {
   @ManyToOne(() => Evento, (evento) => evento.partidos)
   evento: Evento;
 
-  @ManyToOne(() => Equipo, (equipo) => equipo.partidosLocal)
-  equipoLocal: Equipo;
-
-  @ManyToOne(() => Equipo, (equipo) => equipo.partidosVisitante)
-  equipoVisitante: Equipo;
-
   @ManyToOne(() => Usuario, (usuario) => usuario.partidosArbitroPrincipal)
   arbitroPrincipal: Usuario;
 
@@ -56,4 +50,10 @@ export class Partido {
 
   @OneToMany(() => EstadisticaPartido, (estadistica) => estadistica.partido)
   estadisticas: EstadisticaPartido[];
+
+  @ManyToOne(() => Club, (club) => club.partidosLocal)
+    clubLocal: Club;
+
+    @ManyToOne(() => Club, (club) => club.partidosVisitante)
+    clubVisitante: Club;
 }

@@ -13,15 +13,13 @@ export class CreateInscripcionDto {
   @IsNumber()
   id_evento: number;
 
-  @ApiProperty({ example: 1, description: 'ID del equipo' })
+  @ApiProperty({ example: 1, description: 'ID del club' })
   @IsNotEmpty()
   @IsNumber()
-  id_equipo: number;
+  id_club: number;
 
   @ApiProperty({ example: 1, description: 'ID del usuario que registra la inscripción' })
   @IsNotEmpty()
   @IsNumber()
   id_usuario_registra: number;
-
-  
 }

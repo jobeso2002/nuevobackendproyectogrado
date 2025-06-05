@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsString, MinLength } from 'class-validator';
+import { IsDate, IsIn, isInt, IsInt, IsNotEmpty, IsNumber, IsString, MinLength } from 'class-validator';
 
 export class CreateDeportistaDto {
   @ApiProperty({ example: '14324234' })
@@ -47,10 +47,26 @@ export class CreateDeportistaDto {
   @MinLength(1)
   foto: string;
 
+  @ApiProperty({ example: 'A+', enum: ['A+', 'A-', 'B+', 'B-','AB+','AB-','O+','O-'] })
+  @IsString()
+  @IsIn(['A+', 'A-', 'B+', 'B-','AB+','AB-','O+','O-'])
+  tipo_sangre: string;
+
   @ApiProperty({ example: '3998887987' })
   @IsString()
   @MinLength(1)
   telefono: string;
+
+  @ApiProperty({ example: 'central' })
+  @IsString()
+  @MinLength(1)
+  posicion: string;
+
+  @ApiProperty({ example: 1 })
+  @IsNotEmpty()
+  @IsNumber()
+  @IsInt()
+  numero_camiseta: number;
 
   @ApiProperty({ example: 'jugador1@example.com' })
   @IsString()
@@ -61,6 +77,4 @@ export class CreateDeportistaDto {
   @IsString()
   @MinLength(1)
   direccion: string;
-
-  
 }

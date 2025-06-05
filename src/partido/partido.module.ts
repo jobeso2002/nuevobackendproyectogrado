@@ -6,9 +6,9 @@ import { Partido } from './entities/partido.entity';
 import { AuthModule } from '../auth/auth.module';
 import { EstadisticaPartidoModule } from '../estadistica-partido/estadistica-partido.module';
 import { EventoModule } from '../evento/evento.module';
-import { EquipoModule } from '../equipo/equipo.module';
 import { UsuarioModule } from '../usuario/usuario.module';
 import { ResultadoModule } from '../resultado/resultado.module';
+import { ClubModule } from '../club/club.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { ResultadoModule } from '../resultado/resultado.module';
     forwardRef(() => AuthModule),
     forwardRef(() => EstadisticaPartidoModule),
     forwardRef(() => EventoModule),
-    forwardRef(() => EquipoModule),
+    forwardRef(() => ClubModule),
     forwardRef(() => UsuarioModule),
     forwardRef(() => ResultadoModule),
   ],
