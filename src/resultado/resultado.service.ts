@@ -52,14 +52,14 @@ export class ResultadoService {
 
   async findAll(): Promise<Resultado[]> {
     return await this.resultadoRepository.find({
-      relations: ['partido', 'usuarioRegistra', 'partido.equipoLocal', 'partido.equipoVisitante'],
+      relations: ['partido', 'usuarioRegistra', 'partido.clubLocal', 'partido.clubVisitante'],
     });
   }
 
   async findOne(id: number): Promise<Resultado> {
     const resultado = await this.resultadoRepository.findOne({
       where: { id },
-      relations: ['partido', 'usuarioRegistra', 'partido.equipoLocal', 'partido.equipoVisitante'],
+      relations: ['partido', 'usuarioRegistra', 'partido.clubLocal', 'partido.clubVisitante'],
     });
 
     if (!resultado) {
@@ -112,7 +112,7 @@ export class ResultadoService {
   async findByPartido(partidoId: number): Promise<Resultado> {
     const resultado = await this.resultadoRepository.findOne({
       where: { partido: { id: partidoId } },
-      relations: ['partido', 'usuarioRegistra', 'partido.equipoLocal', 'partido.equipoVisitante'],
+      relations: ['partido', 'usuarioRegistra', 'partido.clubLocal', 'partido.clubVisitante'],
     });
 
     if (!resultado) {

@@ -3,6 +3,7 @@ import { Usuario } from '../../usuario/entities/usuario.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -32,6 +33,7 @@ export class Resultado {
   observaciones: string;
 
   @OneToOne(() => Partido, (partido) => partido.resultado)
+  @JoinColumn({ name: 'id_partido' })
   partido: Partido;
 
   @ManyToOne(() => Usuario, (usuario) => usuario.resultadosRegistrados)

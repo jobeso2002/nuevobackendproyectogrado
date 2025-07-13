@@ -38,7 +38,7 @@ export class UsuarioController {
     return this.usuarioService.findAll();
   }
 
-  
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
@@ -48,7 +48,7 @@ export class UsuarioController {
     return this.usuarioService.findOne(+id);
   }
 
-  
+  @ApiBearerAuth('mi secreto1')
   @Get('role/:roleId')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Obtener usuarios por rol' })
@@ -57,7 +57,7 @@ export class UsuarioController {
     return this.usuarioService.findByRole(+roleId);
   }
 
-  
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Actualizar un usuario' })
@@ -70,6 +70,7 @@ export class UsuarioController {
     return this.usuarioService.update(+id, updateUsuarioDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id/changepassword')
   @ApiOperation({ summary: 'Cambiar contraseña de usuario' })
   @ApiResponse({ status: 200, description: 'Contraseña actualizada' })
@@ -81,7 +82,7 @@ export class UsuarioController {
     return this.usuarioService.changePassword(+id, changePasswordDto.newPassword);
   }
 
-  
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @ApiOperation({ summary: 'Eliminar un usuario' })

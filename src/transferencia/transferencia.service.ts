@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { UpdateTransferenciaDto } from './dto/update-transferencia.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,29 +52,16 @@ export class TransferenciaService {
       throw new NotFoundException(`Club de destino con ID ${createTransferenciaDto.id_club_destino} no encontrado`);
     }
 
-    // Verificar que el usuario que registra existe
-    const usuarioRegistra = await this.usuarioRepository.findOne({
+    // Verificar que el usuario existe
+    const usuario = await this.usuarioRepository.findOne({
       where: { id: createTransferenciaDto.id_usuario_registra },
     });
 
-    if (!usuarioRegistra) {
+    if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${createTransferenciaDto.id_usuario_registra} no encontrado`);
     }
 
-    // Verificar que el deportista pertenece al club de origen
-    const perteneceAlClub = await this.clubDeportistaRepository.findOne({
-      where: {
-        deportista: { id: createTransferenciaDto.id_deportista },
-        club: { id: createTransferenciaDto.id_club_origen },
-        estado: 'activo',
-      },
-    });
-
-    if (!perteneceAlClub) {
-      throw new ConflictException('El deportista no pertenece al club de origen especificado');
-    }
-
-    // Verificar que no existe una transferencia pendiente para el mismo deportista
+    // Verificar si ya existe una transferencia pendiente del deportista
     const transferenciaPendiente = await this.transferenciaRepository.findOne({
       where: {
         deportista: { id: createTransferenciaDto.id_deportista },
@@ -83,28 +70,82 @@ export class TransferenciaService {
     });
 
     if (transferenciaPendiente) {
-      throw new ConflictException('El deportista ya tiene una transferencia pendiente');
+      throw new ConflictException(`El deportista con ID ${createTransferenciaDto.id_deportista} ya tiene una transferencia pendiente.`);
     }
 
-    const transferencia = this.transferenciaRepository.create({
-      fechaTransferencia: new Date(createTransferenciaDto.fechaTransferencia),
-      motivo: createTransferenciaDto.motivo,
-      estado: 'pendiente',
-      deportista,
-      clubOrigen,
-      clubDestino,
-      usuarioRegistra,
+    // Verificar si el deportista pertenece actualmente al club de origen
+    const clubActual = await this.clubDeportistaRepository.findOne({
+      where: {
+        deportista: { id: createTransferenciaDto.id_deportista },
+        club: { id: createTransferenciaDto.id_club_origen },
+        estado: 'activo'
+      },
     });
 
-    return this.transferenciaRepository.save(transferencia);
+    if (!clubActual) {
+      throw new ConflictException(`El deportista no pertenece actualmente al club con ID ${createTransferenciaDto.id_club_origen}`);
+    }
+
+    const nuevaTransferencia = this.transferenciaRepository.create({
+      fechaTransferencia: createTransferenciaDto.fechaTransferencia,
+      motivo: createTransferenciaDto.motivo,
+      estado: 'pendiente',
+      deportista: deportista,
+      clubOrigen: clubOrigen,
+      clubDestino: clubDestino,
+      usuarioRegistra: usuario,
+    });
+
+    return this.transferenciaRepository.save(nuevaTransferencia);
   }
   
-  async findAll(): Promise<Transferencia[]> {
-    return this.transferenciaRepository.find({
-      relations: ['deportista', 'clubOrigen', 'clubDestino', 'usuarioRegistra'],
-      order: { fechaTransferencia: 'DESC' },
-    });
-  }
+  // transferencia.service.ts
+async findAll(): Promise<Transferencia[]> {
+  return this.transferenciaRepository.find({
+    relations: [
+      'deportista', 
+      'clubOrigen', 
+      'clubDestino', 
+      'usuarioRegistra',
+      'usuarioAprueba',
+      'usuarioRechaza'
+    ],
+    select: {
+      id: true,
+      fechaTransferencia: true,
+      motivo: true,
+      estado: true,
+      deportista: {
+        id: true,
+        primer_nombre: true,
+        primer_apellido: true
+      },
+      clubOrigen: {
+        id: true,
+        nombre: true
+      },
+      clubDestino: {
+        id: true,
+        nombre: true
+      },
+      usuarioRegistra: {
+        id: true,
+        username: true
+      },
+      usuarioAprueba: {
+        id: true,
+        username: true
+      },
+      usuarioRechaza: {
+        id: true,
+        username: true
+      },
+      fechaAprobacion: true,
+      fechaRechazo: true
+    },
+    order: { fechaTransferencia: 'DESC' },
+  });
+}
 
   async findOne(id: number): Promise<Transferencia> {
     const transferencia = await this.transferenciaRepository.findOne({
@@ -149,6 +190,10 @@ export class TransferenciaService {
   }
 
   async aprobarTransferencia(id: number, idUsuarioAprueba: number): Promise<Transferencia> {
+    // Validar que el ID de usuario sea un número válido
+  if (isNaN(idUsuarioAprueba)) {
+    throw new BadRequestException('ID de usuario inválido');
+  }
     const transferencia = await this.findOne(id);
     const usuarioAprueba = await this.usuarioRepository.findOne({
       where: { id: idUsuarioAprueba },

@@ -21,6 +21,7 @@ import { Authen } from '../auth/decorators/auth.decorator';
 import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
 import { ClubResponseDto } from './dto/club-respon.dto';
+import { AsignarDeportistaDto } from './dto/asignardeportista.dto';
 
 @Controller('club')
 export class ClubController {
@@ -61,6 +62,7 @@ export class ClubController {
     return this.clubService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un club por ID' })
   @ApiResponse({
@@ -73,6 +75,7 @@ export class ClubController {
     return this.clubService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un club' })
   @ApiResponse({
@@ -87,6 +90,7 @@ export class ClubController {
     return this.clubService.update(+id, updateClubDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un club (borrado lógico)' })
   @ApiResponse({
@@ -98,7 +102,7 @@ export class ClubController {
     return this.clubService.remove(+id);
   }
 
-
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/transferencias')
   @ApiOperation({ summary: 'Obtener transferencias de un club' })
   @ApiResponse({ status: 200, description: 'Transferencias del club' })
@@ -107,6 +111,7 @@ export class ClubController {
     return this.clubService.getTransferenciasByClub(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/deportistas')
   @ApiOperation({
     summary: 'Obtener deportistas de un club (todos los equipos)',
@@ -115,5 +120,17 @@ export class ClubController {
   @ApiResponse({ status: 404, description: 'Club no encontrado' })
   getDeportistas(@Param('id') id: string) {
     return this.clubService.getDeportistasByClub(+id);
+  }
+
+  // src/club/club.controller.ts
+  @ApiBearerAuth('mi secreto1')
+  @Post(':id/deportistas')
+  @ApiOperation({ summary: 'Asignar un deportista a un club' })
+  @ApiResponse({ status: 201, description: 'Deportista asignado al club' })
+  async asignarDeportista(
+    @Param('id') idClub: string,
+    @Body() asignarDeportistaDto: AsignarDeportistaDto,
+  ) {
+    return this.clubService.asignarDeportista(+idClub, asignarDeportistaDto);
   }
 }

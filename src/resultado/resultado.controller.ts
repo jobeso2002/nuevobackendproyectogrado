@@ -22,6 +22,7 @@ export class ResultadoController {
     return this.resultadoService.create(createResultadoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los resultados' })
   @ApiResponse({ status: 200, description: 'Lista de resultados' })
@@ -29,6 +30,7 @@ export class ResultadoController {
     return this.resultadoService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un resultado por ID' })
   @ApiResponse({ status: 200, description: 'Resultado encontrado' })
@@ -37,6 +39,7 @@ export class ResultadoController {
     return this.resultadoService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('partido/:partidoId')
   @ApiOperation({ summary: 'Obtener resultado por ID de partido' })
   @ApiResponse({ status: 200, description: 'Resultado encontrado' })
@@ -45,6 +48,7 @@ export class ResultadoController {
     return this.resultadoService.findByPartido(+partidoId);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('evento/:eventoId')
   @ApiOperation({ summary: 'Obtener resultados por ID de evento' })
   @ApiResponse({ status: 200, description: 'Lista de resultados del evento' })
@@ -52,6 +56,7 @@ export class ResultadoController {
     return this.resultadoService.findByEvento(+eventoId);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un resultado' })
   @ApiResponse({ status: 200, description: 'Resultado actualizado' })
@@ -63,6 +68,7 @@ export class ResultadoController {
     return this.resultadoService.update(+id, updateResultadoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un resultado' })
   @ApiResponse({ status: 200, description: 'Resultado eliminado' })

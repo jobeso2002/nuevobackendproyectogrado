@@ -67,7 +67,7 @@ export class EventoService {
   async findOne(id: number): Promise<Evento> {
     const evento = await this.eventoRepository.findOne({
       where: { id },
-      relations: ['organizador', 'inscripciones', 'inscripciones.club', 'partidos', 'partidos.clubLocal', 'partidos.equipoVisitante'],
+      relations: ['organizador', 'inscripciones', 'inscripciones.club', 'partidos', 'partidos.clubLocal', 'partidos.clubVisitante'],
     });
 
     if (!evento) {

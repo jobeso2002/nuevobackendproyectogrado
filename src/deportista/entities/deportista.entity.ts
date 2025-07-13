@@ -57,7 +57,6 @@ export class Deportista {
   })
   tipo_sangre: string;
 
-
   @Column({ length: 20, nullable: false })
   telefono: string;
 

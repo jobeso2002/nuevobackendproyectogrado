@@ -195,11 +195,11 @@ export class PartidoService {
         'estadisticas.deportista',
       ],
     });
-
+  
     if (!partido) {
       throw new NotFoundException(`Partido con ID ${id} no encontrado`);
     }
-
+  
     return partido;
   }
 
@@ -355,31 +355,18 @@ export class PartidoService {
     return this.partidoRepository.save(partido);
   }
 
-  async cambiarEstado(id: number, nuevoEstado: string): Promise<Partido> {
+  async cambiarEstado(id: number, nuevoEstado: string, motivo?: string): Promise<Partido> {
     const partido = await this.findOne(id);
-
-    // Validar transiciones de estado permitidas
-    const transicionesPermitidas = {
-      programado: ['en_juego', 'suspendido'],
-      en_juego: ['finalizado', 'suspendido'],
-      suspendido: ['programado'],
-    };
-
-    if (!transicionesPermitidas[partido.estado]?.includes(nuevoEstado)) {
-      throw new BadRequestException(
-        `Transición de estado no permitida: de ${partido.estado} a ${nuevoEstado}`,
-      );
+    
+    if (nuevoEstado === 'cancelado' && !motivo) {
+      throw new BadRequestException('Se requiere un motivo para cancelar');
     }
-
+  
     partido.estado = nuevoEstado;
-
-    // Registrar hora de inicio/finalización según el estado
-    if (nuevoEstado === 'en_juego') {
-      partido.horaInicio = new Date();
-    } else if (nuevoEstado === 'finalizado') {
-      partido.horaFin = new Date();
+    if (nuevoEstado === 'cancelado') {
+      partido.motivoCancelacion = motivo;
     }
-
+    
     return this.partidoRepository.save(partido);
   }
 
@@ -440,7 +427,7 @@ export class PartidoService {
 
     return this.partidoRepository.find({
       where: { evento: { id: idEvento } },
-      relations: ['equipoLocal', 'equipoVisitante', 'resultado'],
+      relations: ['clubLocal', 'clubVisitante', 'resultado'],
       order: { fechaHora: 'ASC' },
     });
   }
@@ -468,8 +455,22 @@ export class PartidoService {
       where: {
         fechaHora: Between(new Date(fechaInicio), new Date(fechaFin)),
       },
-      relations: ['evento', 'equipoLocal', 'equipoVisitante'],
+      relations: ['evento', 'clubLocal', 'clubVisitante'],
       order: { fechaHora: 'ASC' },
     });
+  }
+
+  async actualizarMotivoCancelacion(id: number, motivo: string): Promise<Partido> {
+    const partido = await this.findOne(id);
+    
+    // Solo permitir actualizar motivo si el partido está cancelado
+    if (partido.estado !== 'cancelado') {
+      throw new ConflictException(
+        'Solo se puede actualizar el motivo en partidos cancelados'
+      );
+    }
+  
+    partido.motivoCancelacion = motivo;
+    return this.partidoRepository.save(partido);
   }
 }

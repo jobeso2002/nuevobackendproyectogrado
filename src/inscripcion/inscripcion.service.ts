@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -139,6 +139,10 @@ export class InscripcionService {
   }
 
   async aprobarInscripcion(id: number, idUsuarioAprueba: number): Promise<Inscripcion> {
+     // Validar que idUsuarioAprueba sea un número válido
+  if (isNaN(idUsuarioAprueba) || idUsuarioAprueba <= 0) {
+    throw new BadRequestException('ID de usuario inválido');
+  }
     const inscripcion = await this.findOne(id);
     const usuarioAprueba = await this.usuarioRepository.findOne({
       where: { id: idUsuarioAprueba },
@@ -191,7 +195,7 @@ export class InscripcionService {
 
     return this.inscripcionRepository.find({
       where,
-      relations: ['club', 'usuarioRegistra', 'usuarioAprueba'],
+      relations: ['club', 'evento', 'usuarioRegistra', 'usuarioAprueba'],
     });
   }
 

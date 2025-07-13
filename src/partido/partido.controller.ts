@@ -24,6 +24,7 @@ export class PartidoController {
     return this.partidoService.create(createPartidoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los partidos' })
   @ApiResponse({ status: 200, description: 'Lista de partidos' })
@@ -49,6 +50,7 @@ export class PartidoController {
     return this.partidoService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un partido por ID' })
   @ApiResponse({ status: 200, description: 'Partido encontrado' })
@@ -57,6 +59,7 @@ export class PartidoController {
     return this.partidoService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un partido programado' })
   @ApiResponse({ status: 200, description: 'Partido actualizado' })
@@ -66,6 +69,7 @@ export class PartidoController {
     return this.partidoService.update(+id, updatePartidoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/cambiar-estado')
   @ApiOperation({ summary: 'Cambiar el estado de un partido' })
   @ApiResponse({ status: 200, description: 'Estado del partido actualizado' })
@@ -79,6 +83,7 @@ export class PartidoController {
     return this.partidoService.cambiarEstado(+id, estado);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/resultado')
   @ApiOperation({ summary: 'Registrar resultado de un partido' })
   @ApiResponse({ status: 201, description: 'Resultado registrado' })
@@ -92,4 +97,18 @@ export class PartidoController {
   ) {
     return this.partidoService.registrarResultado(+id, createResultadoDto, +idUsuario);
   }
+
+  @ApiBearerAuth('mi secreto1')
+  @Post(':id/cancelar')
+@ApiOperation({ summary: 'Cancelar un partido' })
+async cancelar(
+  @Param('id') id: string,
+  @Body() { motivo }: { motivo: string }
+) {
+  await this.partidoService.cambiarEstado(+id, 'cancelado');
+  await this.partidoService.actualizarMotivoCancelacion(+id, motivo);
+  return { message: 'Partido cancelado' };
 }
+}
+
+

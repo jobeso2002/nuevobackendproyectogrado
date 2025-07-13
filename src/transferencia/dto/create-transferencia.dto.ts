@@ -34,3 +34,4 @@ export class CreateTransferenciaDto {
   @IsNumber()
   id_usuario_registra: number;
 }
+  

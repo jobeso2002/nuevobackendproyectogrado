@@ -24,6 +24,7 @@ export class InscripcionController {
     return this.inscripcionService.create(createInscripcionDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todas las inscripciones' })
   @ApiResponse({ status: 200, description: 'Lista de inscripciones' })
@@ -44,6 +45,7 @@ export class InscripcionController {
     return this.inscripcionService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una inscripción por ID' })
   @ApiResponse({ status: 200, description: 'Inscripción encontrada' })
@@ -52,6 +54,7 @@ export class InscripcionController {
     return this.inscripcionService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción actualizada' })
@@ -62,6 +65,7 @@ export class InscripcionController {
     return this.inscripcionService.update(+id, updateInscripcionDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción eliminada' })
@@ -71,6 +75,7 @@ export class InscripcionController {
     return this.inscripcionService.remove(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/aprobar')
   @ApiOperation({ summary: 'Aprobar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción aprobada' })
@@ -79,11 +84,12 @@ export class InscripcionController {
   @ApiQuery({ name: 'idUsuario', description: 'ID del usuario que aprueba la inscripción' })
   aprobarInscripcion(
     @Param('id') id: string,
-    @Query('idUsuario') idUsuario: string,
+    @Body() body: { idUsuario: number } // Cambiar para recibir en el body
   ) {
-    return this.inscripcionService.aprobarInscripcion(+id, +idUsuario);
+    return this.inscripcionService.aprobarInscripcion(+id, body.idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/rechazar')
   @ApiOperation({ summary: 'Rechazar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción rechazada' })
@@ -92,11 +98,13 @@ export class InscripcionController {
   @ApiQuery({ name: 'idUsuario', description: 'ID del usuario que rechaza la inscripción' })
   rechazarInscripcion(
     @Param('id') id: string,
-    @Query('idUsuario') idUsuario: string,
+    
+  @Body() body: { idUsuario: number } // Cambiar para recibir en el body
   ) {
-    return this.inscripcionService.rechazarInscripcion(+id, +idUsuario);
+    return this.inscripcionService.rechazarInscripcion(+id, body.idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('evento/:idEvento/aprobadas')
   @ApiOperation({ summary: 'Obtener inscripciones aprobadas de un evento' })
   @ApiResponse({ status: 200, description: 'Lista de inscripciones aprobadas' })

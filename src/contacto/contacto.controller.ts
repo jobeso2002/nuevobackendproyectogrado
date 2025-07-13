@@ -23,6 +23,7 @@ export class ContactoController {
     return this.contactoService.create(createContactoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('deportista/:idDeportista')
   @ApiOperation({ summary: 'Obtener todos los contactos de un deportista' })
   @ApiParam({ name: 'idDeportista', description: 'ID del deportista' })
@@ -32,6 +33,7 @@ export class ContactoController {
     return this.contactoService.findAllByDeportista(+idDeportista);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un contacto por ID' })
   @ApiResponse({ status: 200, description: 'Contacto encontrado' })
@@ -40,6 +42,7 @@ export class ContactoController {
     return this.contactoService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un contacto' })
   @ApiResponse({ status: 200, description: 'Contacto actualizado' })
@@ -49,6 +52,7 @@ export class ContactoController {
     return this.contactoService.update(+id, updateContactoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un contacto' })
   @ApiResponse({ status: 200, description: 'Contacto eliminado' })
@@ -57,6 +61,7 @@ export class ContactoController {
     return this.contactoService.remove(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('deportista/:idDeportista/emergencia')
   @ApiOperation({ summary: 'Obtener el contacto de emergencia de un deportista' })
   @ApiParam({ name: 'idDeportista', description: 'ID del deportista' })

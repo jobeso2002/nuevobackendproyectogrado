@@ -40,6 +40,7 @@ export class DeportistaController {
     return this.deportistaService.findAll(clubId, genero);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un deportista por ID' })
   @ApiResponse({ status: 200, description: 'Deportista encontrado' })
@@ -48,6 +49,7 @@ export class DeportistaController {
     return this.deportistaService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un deportista' })
   @ApiResponse({ status: 200, description: 'Deportista actualizado' })
@@ -57,6 +59,7 @@ export class DeportistaController {
     return this.deportistaService.update(+id, updateDeportistaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar un deportista (borrado lógico)' })
   @ApiResponse({ status: 200, description: 'Deportista desactivado' })
@@ -65,6 +68,7 @@ export class DeportistaController {
     return this.deportistaService.remove(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/contactos')
   @ApiOperation({ summary: 'Agregar un contacto al deportista' })
   @ApiResponse({ status: 201, description: 'Contacto agregado' })
@@ -73,6 +77,7 @@ export class DeportistaController {
     return this.deportistaService.addContacto(+id, createContactoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id/contactos/:idContacto')
   @ApiOperation({ summary: 'Eliminar un contacto del deportista' })
   @ApiResponse({ status: 200, description: 'Contacto eliminado' })
@@ -84,6 +89,7 @@ export class DeportistaController {
     return this.deportistaService.removeContacto(+id, +idContacto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/transferencias')
   @ApiOperation({ summary: 'Crear una transferencia para el deportista' })
   @ApiResponse({ status: 201, description: 'Transferencia creada' })
@@ -95,6 +101,7 @@ export class DeportistaController {
     return this.deportistaService.createTransferencia(+id, createTransferenciaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/clubs')
   @ApiOperation({ summary: 'Obtener clubs del deportista' })
   @ApiResponse({ status: 200, description: 'Lista de clubs con fechas de ingreso' })
@@ -103,6 +110,7 @@ export class DeportistaController {
     return this.deportistaService.getClubs(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/transferencias')
   @ApiOperation({ summary: 'Obtener transferencias del deportista' })
   @ApiResponse({ status: 200, description: 'Lista de transferencias' })
@@ -111,6 +119,7 @@ export class DeportistaController {
     return this.deportistaService.getTransferencias(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/estadisticas')
   @ApiOperation({ summary: 'Obtener estadísticas del deportista' })
   @ApiResponse({ status: 200, description: 'Estadísticas del deportista' })

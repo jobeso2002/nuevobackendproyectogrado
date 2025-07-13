@@ -14,6 +14,7 @@ import { InscripcionModule } from './inscripcion/inscripcion.module';
 import { PartidoModule } from './partido/partido.module';
 import { ResultadoModule } from './resultado/resultado.module';
 import { EstadisticaPartidoModule } from './estadistica-partido/estadistica-partido.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EstadisticaPartidoModule } from './estadistica-partido/estadistica-part
     PartidoModule,
     ResultadoModule,
     EstadisticaPartidoModule,
+    CloudinaryModule,
 
   ]
   

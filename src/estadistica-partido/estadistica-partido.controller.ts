@@ -22,6 +22,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.create(createEstadisticaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todas las estadísticas de partidos' })
   @ApiResponse({ status: 200, description: 'Lista de estadísticas' })
@@ -29,6 +30,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener estadísticas por ID' })
   @ApiResponse({ status: 200, description: 'Estadísticas encontradas' })
@@ -37,6 +39,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('partido/:partidoId')
   @ApiOperation({ summary: 'Obtener estadísticas por ID de partido' })
   @ApiResponse({ status: 200, description: 'Estadísticas del partido' })
@@ -44,6 +47,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.findByPartido(+partidoId);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('deportista/:deportistaId')
   @ApiOperation({ summary: 'Obtener estadísticas por ID de deportista' })
   @ApiResponse({ status: 200, description: 'Estadísticas del deportista' })
@@ -51,6 +55,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.findByDeportista(+deportistaId);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get('deportista/:deportistaId/agregadas')
   @ApiOperation({ summary: 'Obtener estadísticas agregadas de un deportista' })
   @ApiResponse({ status: 200, description: 'Estadísticas agregadas' })
@@ -58,6 +63,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.getEstadisticasAgregadasPorDeportista(+deportistaId);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar estadísticas' })
   @ApiResponse({ status: 200, description: 'Estadísticas actualizadas' })
@@ -69,6 +75,7 @@ export class EstadisticaPartidoController {
     return this.estadisticaService.update(+id, updateEstadisticaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar estadísticas' })
   @ApiResponse({ status: 200, description: 'Estadísticas eliminadas' })

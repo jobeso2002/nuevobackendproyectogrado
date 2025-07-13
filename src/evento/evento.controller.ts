@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swag
 import { Authen } from '../auth/decorators/auth.decorator';
 import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
+import { CambiarEstadoDto } from './dto/cambiarestado_evento';
 
 @Controller('evento')
 export class EventoController {
@@ -23,6 +24,7 @@ export class EventoController {
     return this.eventoService.create(createEventoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los eventos' })
   @ApiResponse({ status: 200, description: 'Lista de eventos' })
@@ -48,6 +50,7 @@ export class EventoController {
     return this.eventoService.findAll();
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un evento por ID' })
   @ApiResponse({ status: 200, description: 'Evento encontrado' })
@@ -56,6 +59,7 @@ export class EventoController {
     return this.eventoService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un evento' })
   @ApiResponse({ status: 200, description: 'Evento actualizado' })
@@ -65,6 +69,7 @@ export class EventoController {
     return this.eventoService.update(+id, updateEventoDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Delete(':id')
   @ApiOperation({ summary: 'Cancelar un evento (borrado lógico)' })
   @ApiResponse({ status: 200, description: 'Evento cancelado' })
@@ -74,6 +79,7 @@ export class EventoController {
     return this.eventoService.remove(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':idEvento/inscribir/:idClub')
   @ApiOperation({ summary: 'Inscribir un club en un evento' })
   @ApiResponse({ status: 201, description: 'Inscripción creada' })
@@ -88,6 +94,7 @@ export class EventoController {
     return this.eventoService.inscribirClub(+idEvento, +idClub, +idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post('inscripciones/:idInscripcion/aprobar')
   @ApiOperation({ summary: 'Aprobar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción aprobada' })
@@ -101,6 +108,7 @@ export class EventoController {
     return this.eventoService.aprobarInscripcion(+idInscripcion, +idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post('inscripciones/:idInscripcion/rechazar')
   @ApiOperation({ summary: 'Rechazar una inscripción pendiente' })
   @ApiResponse({ status: 200, description: 'Inscripción rechazada' })
@@ -114,6 +122,7 @@ export class EventoController {
     return this.eventoService.rechazarInscripcion(+idInscripcion, +idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Get(':id/inscripciones')
   @ApiOperation({ summary: 'Obtener inscripciones de un evento' })
   @ApiResponse({ status: 200, description: 'Lista de inscripciones' })
@@ -126,18 +135,16 @@ export class EventoController {
     return this.eventoService.getInscripcionesByEvento(+id, estado);
   }
 
-  @Post(':id/cambiar-estado')
-  @ApiOperation({ summary: 'Cambiar el estado de un evento' })
-  @ApiResponse({ status: 200, description: 'Estado cambiado' })
-  @ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
-  @ApiResponse({ status: 409, description: 'Transición de estado no permitida' })
-  @ApiQuery({ name: 'estado', description: 'Nuevo estado (en_curso, finalizado, cancelado)' })
-  @ApiQuery({ name: 'idUsuario', description: 'ID del usuario que realiza el cambio' })
-  cambiarEstadoEvento(
-    @Param('id') id: string,
-    @Query('estado') estado: string,
-    @Query('idUsuario') idUsuario: string,
-  ) {
-    return this.eventoService.cambiarEstadoEvento(+id, estado, +idUsuario);
-  }
+  @ApiBearerAuth('mi secreto1')
+@Post(':id/cambiar-estado')
+@ApiOperation({ summary: 'Cambiar el estado de un evento' })
+@ApiResponse({ status: 200, description: 'Estado cambiado' })
+@ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
+@ApiResponse({ status: 409, description: 'Transición de estado no permitida' })
+cambiarEstadoEvento(
+  @Param('id') id: string,
+  @Body() cambiarEstadoDto: CambiarEstadoDto,
+) {
+  return this.eventoService.cambiarEstadoEvento(+id, cambiarEstadoDto.estado, cambiarEstadoDto.idUsuario);
+}
 }

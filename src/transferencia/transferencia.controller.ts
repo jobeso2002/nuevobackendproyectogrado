@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swag
 import { PermisoType } from '../common/permiso.enum';
 import { RoleType } from '../common/tiporole.enum';
 import { Authen } from '../auth/decorators/auth.decorator';
+import { Transferencia } from './entities/transferencia.entity';
 
 @Controller('transferencia')
 export class TransferenciaController {
@@ -23,26 +24,20 @@ export class TransferenciaController {
     return this.transferenciaService.create(createTransferenciaDto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Obtener todas las transferencias' })
-  @ApiResponse({ status: 200, description: 'Lista de transferencias' })
-  @ApiQuery({ name: 'club', required: false, description: 'Filtrar por ID de club (origen o destino)' })
-  @ApiQuery({ name: 'deportista', required: false, description: 'Filtrar por ID de deportista' })
-  @ApiQuery({ name: 'estado', required: false, description: 'Filtrar por estado (pendiente, aprobada, rechazada)' })
-  async findAll(
-    @Query('club') clubId?: number,
-    @Query('deportista') deportistaId?: number,
-    @Query('estado') estado?: string,
-  ) {
-    if (clubId) {
-      return this.transferenciaService.getTransferenciasByClub(clubId);
-    }
-    if (deportistaId) {
-      return this.transferenciaService.getTransferenciasByDeportista(deportistaId);
-    }
-    return this.transferenciaService.findAll();
-  }
+  @ApiBearerAuth('mi secreto1')
+  // transferencia.controller.ts
+@Get()
+@ApiOperation({ summary: 'Obtener todas las transferencias' })
+@ApiResponse({ 
+  status: 200, 
+  description: 'Lista de transferencias',
+  type: [Transferencia ] // Asegúrate de tener el tipo correcto
+})
+async findAll() {
+  return this.transferenciaService.findAll();
+}
 
+@ApiBearerAuth('mi secreto1')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una transferencia por ID' })
   @ApiResponse({ status: 200, description: 'Transferencia encontrada' })
@@ -51,6 +46,7 @@ export class TransferenciaController {
     return this.transferenciaService.findOne(+id);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una transferencia pendiente' })
   @ApiResponse({ status: 200, description: 'Transferencia actualizada' })
@@ -60,6 +56,7 @@ export class TransferenciaController {
     return this.transferenciaService.update(+id, updateTransferenciaDto);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/aprobar')
   @ApiOperation({ summary: 'Aprobar una transferencia pendiente' })
   @ApiResponse({ status: 200, description: 'Transferencia aprobada' })
@@ -73,6 +70,7 @@ export class TransferenciaController {
     return this.transferenciaService.aprobarTransferencia(+id, +idUsuario);
   }
 
+  @ApiBearerAuth('mi secreto1')
   @Post(':id/rechazar')
   @ApiOperation({ summary: 'Rechazar una transferencia pendiente' })
   @ApiResponse({ status: 200, description: 'Transferencia rechazada' })

@@ -36,6 +36,7 @@ export class AuthService {
     const payload = {
       id: userWithRelations.id,
       email: userWithRelations.email,
+      username: userWithRelations.username,
       role: {
         id: userWithRelations.role.id,
         name: userWithRelations.role.name
@@ -79,6 +80,7 @@ this.usuarioService
     const payload = {
       id: user.id,
       email: user.email,
+      username: user.username,
       role: {
         id: user.role.id,
         name: user.role.name
