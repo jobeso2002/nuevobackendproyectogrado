@@ -10,6 +10,7 @@ import { EstadisticaPartidoModule } from '../estadistica-partido/estadistica-par
 import { ClubDeportista } from '../club/entities/clubdeportista';
 import { Club } from '../club/entities/club.entity';
 import { ClubModule } from '../club/club.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 
 @Module({
@@ -20,6 +21,7 @@ import { ClubModule } from '../club/club.module';
     forwardRef(() => TransferenciaModule),
     forwardRef(() => EstadisticaPartidoModule),
     forwardRef(() => ClubModule),
+    CloudinaryModule,
   ],
   controllers: [DeportistaController],
   providers: [DeportistaService],

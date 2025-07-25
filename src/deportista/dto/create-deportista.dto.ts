@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsIn, isInt, IsInt, IsNotEmpty, IsNumber, IsString, MinLength } from 'class-validator';
+import { IsDate, IsIn, isInt, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateDeportistaDto {
   @ApiProperty({ example: '14324234' })
@@ -42,10 +42,14 @@ export class CreateDeportistaDto {
   @MinLength(1)
   genero: string;
 
-  @ApiProperty({ example: 'foto' })
-  @IsString()
-  @MinLength(1)
-  foto: string;
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo de imagen del logo',
+    required: false
+  })
+  @IsOptional()
+  fotoFile?: any;
 
   @ApiProperty({ example: 'A+', enum: ['A+', 'A-', 'B+', 'B-','AB+','AB-','O+','O-'] })
   @IsString()

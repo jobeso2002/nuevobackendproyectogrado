@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { DeportistaService } from './deportista.service';
 import { CreateDeportistaDto } from './dto/create-deportista.dto';
 import { UpdateDeportistaDto } from './dto/update-deportista.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateTransferenciaDto } from '../transferencia/dto/create-transferencia.dto';
 import { CreateContactoDto } from '../contacto/dto/create-contacto.dto';
 import { Authen } from '../auth/decorators/auth.decorator';
@@ -10,6 +10,7 @@ import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('deportista')
 export class DeportistaController {
@@ -19,12 +20,17 @@ export class DeportistaController {
   @ApiBearerAuth('mi secreto1')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @Post()
+  @UseInterceptors(FileInterceptor('fotoFile'))
   @ApiOperation({ summary: 'Crear un nuevo deportista' })
   @ApiResponse({ status: 201, description: 'Deportista creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Ya existe un deportista con este documento' })
-  create(@Body() createDeportistaDto: CreateDeportistaDto) {
-    return this.deportistaService.create(createDeportistaDto);
+  @ApiConsumes('multipart/form-data') // Añade esta línea
+  create(
+    @Body() createDeportistaDto: CreateDeportistaDto,
+    @UploadedFile() fotoFile?: Express.Multer.File,
+  ) {
+    return this.deportistaService.create(createDeportistaDto, fotoFile);
   }
 
   @ApiBearerAuth('mi secreto1')

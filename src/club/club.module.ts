@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 import { TransferenciaModule } from '../transferencia/transferencia.module';
 import { ClubDeportista } from './entities/clubdeportista';
 import { DeportistaModule } from '../deportista/deportista.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DeportistaModule } from '../deportista/deportista.module';
     forwardRef(()=> UsuarioModule),
     forwardRef(() => TransferenciaModule),
     forwardRef(() => DeportistaModule),
+    CloudinaryModule,
   ],
   controllers: [ClubController],
   providers: [ClubService],

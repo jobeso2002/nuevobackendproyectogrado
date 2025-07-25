@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -13,6 +14,7 @@ import { ClubResponseDto } from './dto/club-respon.dto';
 import { Deportista } from '../deportista/entities/deportista.entity';
 import { AsignarDeportistaDto } from './dto/asignardeportista.dto';
 import { ClubDeportista } from './entities/clubdeportista';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ClubService {
@@ -25,9 +27,24 @@ export class ClubService {
     private readonly deportistaRepository: Repository<Deportista>,
     @InjectRepository(ClubDeportista)
     private readonly clubDeportistaRepository: Repository<ClubDeportista>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(createClubDto: CreateClubDto): Promise<Club> {
+  async create(
+    createClubDto: CreateClubDto,
+    logoFile?: Express.Multer.File,
+  ): Promise<Club> {
+    // Subir imagen a Cloudinary si existe
+    let logoUrl = ''; // Inicializa como string vacío
+    // Subir imagen a Cloudinary si existe
+  if (logoFile) {
+    try {
+      logoUrl = await this.cloudinaryService.uploadImage(logoFile, 'clubs');
+    } catch (error) {
+      throw new InternalServerErrorException('Error al subir la imagen a Cloudinary');
+    }
+  }
+
     // Verificar si ya existe un club con el mismo nombre
     const existingClub = await this.clubRepository.findOne({
       where: { nombre: createClubDto.nombre },
@@ -51,6 +68,7 @@ export class ClubService {
     const club = this.clubRepository.create({
       ...createClubDto,
       responsable,
+      logo: logoUrl,
     });
 
     return this.clubRepository.save(club);

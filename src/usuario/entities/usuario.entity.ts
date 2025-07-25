@@ -27,6 +27,12 @@ export class Usuario {
   @Column({ nullable: false })
   password: string;
 
+  @Column({ nullable: true })
+resetToken?: string;
+
+@Column({ nullable: true, type: 'timestamp' })
+resetTokenExpiry?: Date;
+
   @ManyToOne(() => Role, (role) => role.usuarios)
   role: Role;
 

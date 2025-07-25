@@ -7,12 +7,15 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -22,6 +25,7 @@ import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
 import { ClubResponseDto } from './dto/club-respon.dto';
 import { AsignarDeportistaDto } from './dto/asignardeportista.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('club')
 export class ClubController {
@@ -30,14 +34,19 @@ export class ClubController {
   @ApiBearerAuth('mi secreto1')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @Post()
+  @UseInterceptors(FileInterceptor('logoFile'))
   @ApiOperation({ summary: 'Crear un nuevo club' })
   @ApiResponse({
     status: 201,
     description: 'Club creado exitosamente',
     type: ClubResponseDto, // Agregar tipo de respuesta
   })
-  async create(@Body() createClubDto: CreateClubDto): Promise<ClubResponseDto> {
-    return this.clubService.create(createClubDto);
+  @ApiConsumes('multipart/form-data') // Añade esta línea
+  async create(
+    @Body() createClubDto: CreateClubDto,
+    @UploadedFile() logoFile?: Express.Multer.File,
+  ): Promise<ClubResponseDto> {
+    return this.clubService.create(createClubDto, logoFile);
   }
 
   @ApiBearerAuth('mi secreto1')

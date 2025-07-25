@@ -26,17 +26,12 @@ export class EventoController {
 
   @ApiBearerAuth('mi secreto1')
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los eventos' })
-  @ApiResponse({ status: 200, description: 'Lista de eventos' })
-  @ApiQuery({ name: 'tipo', required: false, description: 'Filtrar por tipo de evento' })
-  @ApiQuery({ name: 'estado', required: false, description: 'Filtrar por estado' })
-  @ApiQuery({ name: 'proximos', required: false, description: 'Obtener próximos eventos', type: Boolean })
-  @ApiQuery({ name: 'activos', required: false, description: 'Obtener eventos activos', type: Boolean })
   async findAll(
     @Query('tipo') tipo?: string,
     @Query('estado') estado?: string,
     @Query('proximos') proximos?: boolean,
     @Query('activos') activos?: boolean,
+    @Query('todos') todos?: boolean, // Nuevo parámetro
   ) {
     if (proximos) {
       return this.eventoService.getProximosEventos();
@@ -47,7 +42,15 @@ export class EventoController {
     if (tipo) {
       return this.eventoService.getEventosPorTipo(tipo);
     }
-    return this.eventoService.findAll();
+    if (estado) {
+      return this.eventoService.getEventosPorEstado(estado);
+    }
+    // Por defecto, devolver todos los eventos si se especifica 'todos'
+    if (todos) {
+      return this.eventoService.findAll();
+    }
+    // Si no, devolver solo eventos planificados (para compatibilidad con partidos)
+    return this.eventoService.getEventosPorEstado('planificado');
   }
 
   @ApiBearerAuth('mi secreto1')
@@ -136,15 +139,27 @@ export class EventoController {
   }
 
   @ApiBearerAuth('mi secreto1')
-@Post(':id/cambiar-estado')
-@ApiOperation({ summary: 'Cambiar el estado de un evento' })
-@ApiResponse({ status: 200, description: 'Estado cambiado' })
-@ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
-@ApiResponse({ status: 409, description: 'Transición de estado no permitida' })
-cambiarEstadoEvento(
-  @Param('id') id: string,
-  @Body() cambiarEstadoDto: CambiarEstadoDto,
-) {
-  return this.eventoService.cambiarEstadoEvento(+id, cambiarEstadoDto.estado, cambiarEstadoDto.idUsuario);
+  @Post(':id/cambiar-estado')
+  @ApiOperation({ summary: 'Cambiar el estado de un evento' })
+  @ApiResponse({ status: 200, description: 'Estado cambiado' })
+  @ApiResponse({ status: 404, description: 'Evento o usuario no encontrado' })
+  @ApiResponse({ status: 409, description: 'Transición de estado no permitida' })
+  cambiarEstadoEvento(
+    @Param('id') id: string,
+    @Body() cambiarEstadoDto: CambiarEstadoDto,
+  ) {
+    return this.eventoService.cambiarEstadoEvento(+id, cambiarEstadoDto.estado, cambiarEstadoDto.idUsuario);
+  }
+
+  @ApiBearerAuth('mi secreto1')
+  @Get(':id/clubes-inscritos')
+  @ApiOperation({ summary: 'Obtener clubes inscritos en un evento' })
+  @ApiResponse({ status: 200, description: 'Lista de clubes inscritos' })
+  @ApiResponse({ status: 404, description: 'Evento no encontrado' })
+  async getClubesInscritos(@Param('id') id: number) {
+    return this.eventoService.obtenerClubesInscritos(id);
+  }
+
 }
-}
+
+

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +15,7 @@ import { CreateContactoDto } from '../contacto/dto/create-contacto.dto';
 import { CreateTransferenciaDto } from '../transferencia/dto/create-transferencia.dto';
 import { Club } from 'src/club/entities/club.entity';
 import { ClubDeportista } from 'src/club/entities/clubdeportista';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class DeportistaService {
@@ -28,9 +30,20 @@ export class DeportistaService {
     private readonly clubRepository: Repository<Club>,
     @InjectRepository(ClubDeportista)
     private readonly clubDeportistaRepository: Repository<ClubDeportista>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(createDeportistaDto: CreateDeportistaDto): Promise<Deportista> {
+  async create(createDeportistaDto: CreateDeportistaDto, fotoFile?: Express.Multer.File): Promise<Deportista> {
+    // Subir imagen a Cloudinary si existe
+    let fotoUrl = '';
+    
+    if (fotoFile) {
+      try {
+        fotoUrl = await this.cloudinaryService.uploadImage(fotoFile, 'deportistas');
+      } catch (error) {
+        throw new InternalServerErrorException('Error al subir la imagen a Cloudinary');
+      }
+    }
     // Verificar si ya existe un deportista con el mismo documento
     const existingDeportista = await this.deportistaRepository.findOne({
       where: { documentoIdentidad: createDeportistaDto.documentoIdentidad },
@@ -51,7 +64,7 @@ export class DeportistaService {
       genero: createDeportistaDto.genero,
       documentoIdentidad: createDeportistaDto.documentoIdentidad,
       tipoDocumento: createDeportistaDto.tipoDocumento,
-      foto: createDeportistaDto.foto,
+      foto: fotoUrl,
       tipo_sangre: createDeportistaDto.tipo_sangre,
       telefono: createDeportistaDto.telefono,
       email: createDeportistaDto.email,
@@ -140,7 +153,7 @@ export class DeportistaService {
         updateDeportistaDto.documentoIdentidad || deportista.documentoIdentidad,
       tipoDocumento:
         updateDeportistaDto.tipoDocumento || deportista.tipoDocumento,
-      foto: updateDeportistaDto.foto || deportista.foto,
+      foto: updateDeportistaDto.fotoFile || deportista.foto,
       telefono: updateDeportistaDto.telefono || deportista.telefono,
       email: updateDeportistaDto.email || deportista.email,
       direccion: updateDeportistaDto.direccion || deportista.direccion,

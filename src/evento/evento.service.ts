@@ -139,6 +139,33 @@ export class EventoService {
     return this.eventoRepository.save(evento);
   }
 
+  // club registrado en el evento
+async obtenerClubesInscritos(idEvento: number) {
+  const evento = await this.eventoRepository.findOne({
+    where: { id: idEvento },
+    relations: ['inscripciones', 'inscripciones.club']
+  });
+
+  if (!evento) {
+    throw new NotFoundException(`Evento con ID ${idEvento} no encontrado`);
+  }
+
+  // Filtrar solo inscripciones aprobadas si es necesario
+  const inscripcionesAprobadas = evento.inscripciones.filter(
+    i => i.estado === 'aprobada'
+  );
+
+  return inscripcionesAprobadas.map(i => i.club);
+}
+
+async getEventosPorEstado(estado: string): Promise<Evento[]> {
+  return this.eventoRepository.find({
+    where: { estado },
+    relations: ['organizador', 'inscripciones', 'partidos'],
+    order: { fechaInicio: 'ASC' },
+  });
+}
+
   async inscribirClub(idEvento: number, idClub: number, idUsuarioRegistra: number): Promise<Inscripcion> {
     const evento = await this.findOne(idEvento);
     const club = await this.clubRepository.findOne({
@@ -246,14 +273,22 @@ export class EventoService {
       throw new NotFoundException(`Usuario con ID ${idUsuario} no encontrado`);
     }
 
+    // Validar que el nuevo estado sea diferente
+  if (evento.estado === nuevoEstado) {
+    throw new ConflictException(`No se puede cambiar al mismo estado actual (${evento.estado})`);
+  }
+
     // Validar transiciones de estado permitidas
     const transicionesPermitidas = {
       planificado: ['en_curso', 'cancelado'],
-      en_curso: ['finalizado', 'cancelado'],
+      en_curso: ['finalizado', 'cancelado'], // Aquí está la configuración correcta
     };
 
     if (!transicionesPermitidas[evento.estado]?.includes(nuevoEstado)) {
-      throw new ConflictException(`Transición de estado no permitida: de ${evento.estado} a ${nuevoEstado}`);
+      throw new ConflictException(
+        `Transición de estado no permitida: de ${evento.estado} a ${nuevoEstado}. ` +
+        `Transiciones permitidas desde ${evento.estado}: ${transicionesPermitidas[evento.estado].join(', ')}`
+      );
     }
 
     evento.estado = nuevoEstado;
@@ -307,4 +342,8 @@ export class EventoService {
       take: 5,
     });
   }
+
+
+
+
 }

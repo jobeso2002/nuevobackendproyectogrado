@@ -356,17 +356,43 @@ export class PartidoService {
   }
 
   async cambiarEstado(id: number, nuevoEstado: string, motivo?: string): Promise<Partido> {
+    console.log('Datos recibidos:', { id, nuevoEstado, motivo }); // Agrega este log
     const partido = await this.findOne(id);
+    console.log('Estado actual del partido:', partido.estado); // Agrega este log
     
+    // Validar transiciones de estado permitidas
+    const transicionesPermitidas: Record<string, string[]> = {
+      programado: ['en_juego', 'cancelado'],
+      en_juego: ['finalizado', 'cancelado'],
+      finalizado: [],
+      cancelado: []
+    };
+  
+    if (!transicionesPermitidas[partido.estado].includes(nuevoEstado)) {
+      throw new BadRequestException(
+        `Transición no permitida de ${partido.estado} a ${nuevoEstado}`
+      );
+    }
+  
+    // Validaciones específicas para cada estado
     if (nuevoEstado === 'cancelado' && !motivo) {
       throw new BadRequestException('Se requiere un motivo para cancelar');
     }
   
+    if (nuevoEstado === 'en_juego') {
+      partido.horaInicio = new Date();
+    }
+  
+    if (nuevoEstado === 'finalizado') {
+      partido.horaFin = new Date();
+    }
+  
     partido.estado = nuevoEstado;
+    
     if (nuevoEstado === 'cancelado') {
       partido.motivoCancelacion = motivo;
     }
-    
+  
     return this.partidoRepository.save(partido);
   }
 

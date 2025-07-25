@@ -6,6 +6,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
@@ -44,10 +45,14 @@ export class CreateClubDto {
   @MinLength(1)
   email: string;
 
-  @ApiProperty({ example: 'ganador logo' })
-  @IsString()
-  @MinLength(1)
-  logo: string;
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo de imagen del logo',
+    required: false
+  })
+  @IsOptional()
+  logoFile?: any;
 
   @ApiProperty({ example: 1 })
   @IsNotEmpty()

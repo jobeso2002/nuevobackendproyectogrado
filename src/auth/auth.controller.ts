@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RoleType } from "src/common/tiporole.enum";
 import { Authen } from "./decorators/auth.decorator";
@@ -30,4 +30,35 @@ export class AuthController {
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
+  // auth.controller.ts
+
+@Post('forgot-password')
+@ApiOperation({ summary: 'Solicitar restablecimiento de contraseña' })
+@ApiResponse({ status: 200, description: 'Correo de restablecimiento enviado' })
+@ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+async forgotPassword(@Body() { email }: { email: string }) {
+  return this.authService.sendPasswordResetEmail(email);
+}
+
+@Post('reset-password')
+@ApiOperation({ summary: 'Restablecer contraseña' })
+@ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente' })
+@ApiResponse({ status: 400, description: 'Token inválido o expirado' })
+async resetPassword(
+  @Body() { email, token, newPassword }: { email: string; token: string; newPassword: string }
+) {
+  // Validaciones básicas
+  if (!email || !token || !newPassword) {
+    throw new BadRequestException('Faltan campos requeridos: email, token, newPassword');
+  }
+
+  // Verifica el token y actualiza la contraseña
+  const result = await this.authService.resetPassword(email, token, newPassword);
+  
+  if (!result.success) {
+    throw new BadRequestException(result.message);
+  }
+
+  return { success: true, message: result.message };
+}
 }

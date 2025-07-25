@@ -75,12 +75,12 @@ export class PartidoController {
   @ApiResponse({ status: 200, description: 'Estado del partido actualizado' })
   @ApiResponse({ status: 400, description: 'Transición de estado no permitida' })
   @ApiResponse({ status: 404, description: 'Partido no encontrado' })
-  @ApiQuery({ name: 'estado', description: 'Nuevo estado (en_juego, finalizado, suspendido, programado)' })
-  cambiarEstado(
+  @ApiQuery({ name: 'estado', enum: ['en_juego', 'finalizado', 'cancelado'] })
+  async cambiarEstado(
     @Param('id') id: string,
-    @Query('estado') estado: string,
+    @Body() { estado, motivoCancelacion }: { estado: string; motivoCancelacion?: string }
   ) {
-    return this.partidoService.cambiarEstado(+id, estado);
+    return this.partidoService.cambiarEstado(+id, estado, motivoCancelacion);
   }
 
   @ApiBearerAuth('mi secreto1')

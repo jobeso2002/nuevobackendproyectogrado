@@ -15,11 +15,15 @@ import { PartidoModule } from './partido/partido.module';
 import { ResultadoModule } from './resultado/resultado.module';
 import { EstadisticaPartidoModule } from './estadistica-partido/estadistica-partido.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    MulterModule.register({
+      dest: './uploads', // Directorio temporal para almacenar archivos
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

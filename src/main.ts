@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // Habilitar CORS
   app.enableCors({
-    origin: 'http://localhost:5173', // Cambia '*' por el dominio específico en producción
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Cambia '*' por el dominio específico en producción
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Permitir cookies y tokens de sesión
     allowedHeaders: 'Content-Type, Authorization',
