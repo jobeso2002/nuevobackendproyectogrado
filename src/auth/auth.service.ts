@@ -97,12 +97,7 @@ export class AuthService {
 
     return {
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role.name
-      }
+      user: payload
     };
   }
 

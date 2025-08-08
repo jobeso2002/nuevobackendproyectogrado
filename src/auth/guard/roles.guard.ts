@@ -11,36 +11,32 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRole = this.reflector.getAllAndOverride<RoleType>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredPermissions = this.reflector.getAllAndOverride<PermisoType[]>(
+      PERMISION_KEY,
+      [context.getHandler(), context.getClass()]
+    );
 
-    const requiredPermissions = this.reflector.getAllAndOverride<PermisoType[]>(PERMISION_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    // Si no hay permisos requeridos, permitir acceso
+    if (!requiredPermissions || requiredPermissions.length === 0) {
+      return true;
+    }
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // Verificar rol requerido
-    if (requiredRole) {
-      const hasRole = user.role.name === requiredRole || user.role.name === RoleType.ADMIN;
-      if (!hasRole) {
-        throw new ForbiddenException('No tienes el rol necesario para acceder a este recurso');
-      }
+    if (!user || !user.permisos) {
+      throw new ForbiddenException('Usuario no autenticado o sin permisos');
     }
 
-    // Verificar permisos requeridos
-    if (requiredPermissions && requiredPermissions.length > 0) {
-      const hasAllPermissions = requiredPermissions.every(permission => 
-        user.permisos.includes(permission)
+    // Verificar si el usuario tiene todos los permisos requeridos
+    const hasAllPermissions = requiredPermissions.every(permission =>
+      user.permisos.includes(permission)
+    );
+
+    if (!hasAllPermissions) {
+      throw new ForbiddenException(
+        `Requiere permisos: ${requiredPermissions.join(', ')}`
       );
-      
-      if (!hasAllPermissions) {
-        throw new ForbiddenException('No tienes los permisos necesarios para acceder a este recurso');
-      }
     }
 
     return true;

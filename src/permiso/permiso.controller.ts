@@ -8,7 +8,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class PermisoController {
   constructor(private readonly permisoService: PermisoService) {}
 
-  // @ApiBearerAuth('mi secreto1')
+  @ApiBearerAuth('mi secreto1')
   @Post()
   create(@Body() createPermisoDto: CreatePermisionDto) {
     return this.permisoService.create(createPermisoDto);
