@@ -14,7 +14,7 @@ import { Transferencia } from '../transferencia/entities/transferencia.entity';
 import { CreateContactoDto } from '../contacto/dto/create-contacto.dto';
 import { CreateTransferenciaDto } from '../transferencia/dto/create-transferencia.dto';
 import { Club } from 'src/club/entities/club.entity';
-import { ClubDeportista } from 'src/club/entities/clubdeportista';
+import { ClubDeportista } from '../club/entities/clubdeportista';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
@@ -33,17 +33,17 @@ export class DeportistaService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(createDeportistaDto: CreateDeportistaDto, fotoFile?: Express.Multer.File): Promise<Deportista> {
-    // Subir imagen a Cloudinary si existe
-    let fotoUrl = '';
-    
-    if (fotoFile) {
-      try {
-        fotoUrl = await this.cloudinaryService.uploadImage(fotoFile, 'deportistas');
-      } catch (error) {
-        throw new InternalServerErrorException('Error al subir la imagen a Cloudinary');
-      }
-    }
+  async create(
+    createDeportistaDto: CreateDeportistaDto,
+    files?: {
+      fotoFile?: Express.Multer.File;
+      documentoIdentidadFile?: Express.Multer.File;
+      registroCivilFile?: Express.Multer.File;
+      afiliacionFile?: Express.Multer.File;
+      certificadoEpsFile?: Express.Multer.File;
+      permisoResponsableFile?: Express.Multer.File;
+    },
+  ): Promise<Deportista> {
     // Verificar si ya existe un deportista con el mismo documento
     const existingDeportista = await this.deportistaRepository.findOne({
       where: { documentoIdentidad: createDeportistaDto.documentoIdentidad },
@@ -55,6 +55,112 @@ export class DeportistaService {
       );
     }
 
+    // Subir archivos a Cloudinary
+    const uploadPromises: Array<Promise<void>> = [];
+    const uploadResults: {
+      foto?: string;
+      documentoIdentidadPdf?: string;
+      registroCivilPdf?: string;
+      afiliacionPdf?: string;
+      certificadoEpsPdf?: string;
+      permisoResponsablePdf?: string;
+    } = {};
+
+    if (files?.fotoFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadImage(files.fotoFile, 'deportistas')
+          .then((url) => {
+            uploadResults.foto = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException('Error al subir la foto');
+          }),
+      );
+    }
+
+    if (files?.permisoResponsableFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.permisoResponsableFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.permisoResponsablePdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el permiso del responsable',
+            );
+          }),
+      );
+    }
+
+    if (files?.documentoIdentidadFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.documentoIdentidadFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.documentoIdentidadPdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el documento de identidad',
+            );
+          }),
+      );
+    }
+
+    if (files?.registroCivilFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.registroCivilFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.registroCivilPdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el registro civil',
+            );
+          }),
+      );
+    }
+
+    if (files?.afiliacionFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.afiliacionFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.afiliacionPdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir la afiliación',
+            );
+          }),
+      );
+    }
+
+    if (files?.certificadoEpsFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.certificadoEpsFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.certificadoEpsPdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el certificado EPS',
+            );
+          }),
+      );
+    }
+
+    try {
+      await Promise.all(uploadPromises);
+    } catch (error) {
+      // Esto capturará cualquier error lanzado en los .catch anteriores
+      throw error;
+    }
+
     const deportista = this.deportistaRepository.create({
       primer_nombre: createDeportistaDto.primer_nombre,
       segundo_nombre: createDeportistaDto.segundo_nombre,
@@ -64,14 +170,19 @@ export class DeportistaService {
       genero: createDeportistaDto.genero,
       documentoIdentidad: createDeportistaDto.documentoIdentidad,
       tipoDocumento: createDeportistaDto.tipoDocumento,
-      foto: fotoUrl,
       tipo_sangre: createDeportistaDto.tipo_sangre,
       telefono: createDeportistaDto.telefono,
       email: createDeportistaDto.email,
       estado: 'activo',
       direccion: createDeportistaDto.direccion,
       posicion: createDeportistaDto.posicion,
-      numero_camiseta: createDeportistaDto.numero_camiseta
+      numero_camiseta: createDeportistaDto.numero_camiseta,
+      foto: uploadResults.foto,
+      documentoIdentidadPdf: uploadResults.documentoIdentidadPdf,
+      registroCivilPdf: uploadResults.registroCivilPdf,
+      afiliacionPdf: uploadResults.afiliacionPdf,
+      certificadoEpsPdf: uploadResults.certificadoEpsPdf,
+      permisoResponsablePdf: uploadResults.permisoResponsablePdf,
     });
 
     return this.deportistaRepository.save(deportista);
@@ -118,6 +229,14 @@ export class DeportistaService {
   async update(
     id: number,
     updateDeportistaDto: UpdateDeportistaDto,
+    files?: {
+      fotoFile?: Express.Multer.File;
+      documentoIdentidadFile?: Express.Multer.File;
+      registroCivilFile?: Express.Multer.File;
+      afiliacionFile?: Express.Multer.File;
+      certificadoEpsFile?: Express.Multer.File;
+      permisoResponsableFile?: Express.Multer.File;
+    },
   ): Promise<Deportista> {
     const deportista = await this.findOne(id);
 
@@ -136,29 +255,140 @@ export class DeportistaService {
       }
     }
 
-    this.deportistaRepository.merge(deportista, {
-      primer_nombre:
-        updateDeportistaDto.primer_nombre || deportista.primer_nombre,
-      segundo_nombre:
-        updateDeportistaDto.segundo_nombre || deportista.segundo_nombre,
-      primer_apellido:
-        updateDeportistaDto.primer_apellido || deportista.primer_apellido,
-      segundo_apellido:
-        updateDeportistaDto.segundo_apellido || deportista.segundo_apellido,
+    // Subir nuevos archivos si existen
+    const uploadPromises: Promise<void>[] = [];
+    const uploadResults: any = {};
+
+    if (files?.fotoFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadImage(files.fotoFile, 'deportistas')
+          .then((url) => {
+            uploadResults.foto = url;
+            // Eliminar la foto anterior si existe
+            if (deportista.foto) {
+              this.cloudinaryService
+                .deleteImage(deportista.foto)
+                .catch(() => {});
+            }
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException('Error al subir la foto');
+          }),
+      );
+    }
+
+    if (files?.permisoResponsableFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.permisoResponsableFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.permisoResponsablePdf = url;
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el permiso del responsable',
+            );
+          }),
+      );
+    }
+
+    if (files?.documentoIdentidadFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.documentoIdentidadFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.documentoIdentidadPdf = url;
+            if (deportista.documentoIdentidadPdf) {
+              this.cloudinaryService
+                .deleteImage(deportista.documentoIdentidadPdf)
+                .catch(() => {});
+            }
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir documento de identidad',
+            );
+          }),
+      );
+    }
+
+    if (files?.registroCivilFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.registroCivilFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.registroCivilPdf = url;
+            if (deportista.registroCivilPdf) {
+              this.cloudinaryService
+                .deleteImage(deportista.registroCivilPdf)
+                .catch(() => {});
+            }
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el registro civil',
+            );
+          }),
+      );
+    }
+
+    if (files?.afiliacionFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.afiliacionFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.afiliacionPdf = url;
+            if (deportista.afiliacionPdf) {
+              this.cloudinaryService
+                .deleteImage(deportista.afiliacionPdf)
+                .catch(() => {});
+            }
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir la afiliación',
+            );
+          }),
+      );
+    }
+
+    if (files?.certificadoEpsFile) {
+      uploadPromises.push(
+        this.cloudinaryService
+          .uploadPdf(files.certificadoEpsFile, 'deportistas/docs')
+          .then((url) => {
+            uploadResults.certificadoEpsPdf = url;
+            if (deportista.certificadoEpsPdf) {
+              this.cloudinaryService
+                .deleteImage(deportista.certificadoEpsPdf)
+                .catch(() => {});
+            }
+          })
+          .catch((error) => {
+            throw new InternalServerErrorException(
+              'Error al subir el certificado EPS',
+            );
+          }),
+      );
+    }
+
+    try {
+      await Promise.all(uploadPromises);
+    } catch (error) {
+      throw error;
+    }
+
+    // Actualizar los campos
+    const updatedData = {
+      ...updateDeportistaDto,
+      ...uploadResults,
       fechaNacimiento: updateDeportistaDto.fechaNacimiento
         ? new Date(updateDeportistaDto.fechaNacimiento)
         : deportista.fechaNacimiento,
-      genero: updateDeportistaDto.genero || deportista.genero,
-      documentoIdentidad:
-        updateDeportistaDto.documentoIdentidad || deportista.documentoIdentidad,
-      tipoDocumento:
-        updateDeportistaDto.tipoDocumento || deportista.tipoDocumento,
-      foto: updateDeportistaDto.fotoFile || deportista.foto,
-      telefono: updateDeportistaDto.telefono || deportista.telefono,
-      email: updateDeportistaDto.email || deportista.email,
-      direccion: updateDeportistaDto.direccion || deportista.direccion,
-    });
+    };
 
+    this.deportistaRepository.merge(deportista, updatedData);
     return this.deportistaRepository.save(deportista);
   }
 
@@ -233,23 +463,25 @@ export class DeportistaService {
     return this.transferenciaRepository.save(transferencia);
   }
 
-  async getClubs(id: number): Promise<{club: Club, fechaIngreso: Date, estado: string}[]> {
+  async getClubs(
+    id: number,
+  ): Promise<{ club: Club; fechaIngreso: Date; estado: string }[]> {
     const relaciones = await this.clubDeportistaRepository.find({
       where: {
         deportista: { id },
-        estado: 'activo'
+        estado: 'activo',
       },
-      relations: ['club']
+      relations: ['club'],
     });
 
     if (!relaciones || relaciones.length === 0) {
       return [];
     }
 
-    return relaciones.map(rel => ({
+    return relaciones.map((rel) => ({
       club: rel.club,
       fechaIngreso: rel.fechaIngreso,
-      estado: rel.estado
+      estado: rel.estado,
     }));
   }
 

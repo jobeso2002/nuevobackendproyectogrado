@@ -49,6 +49,21 @@ export class Deportista {
   @Column({ length: 255, nullable: true })
   foto: string;
 
+  @Column({ length: 255, nullable: true })
+  documentoIdentidadPdf: string;
+
+  @Column({ length: 255, nullable: true })
+  registroCivilPdf: string;
+
+  @Column({ length: 255, nullable: true })
+  afiliacionPdf: string;
+
+  @Column({ length: 255, nullable: true })
+  certificadoEpsPdf: string;
+
+  @Column({ length: 255, nullable: true })
+  permisoResponsablePdf: string;
+
   @Column({
     name: 'tipo_sangre',
     type: 'enum',

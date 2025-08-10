@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
 import { DeportistaService } from './deportista.service';
 import { CreateDeportistaDto } from './dto/create-deportista.dto';
 import { UpdateDeportistaDto } from './dto/update-deportista.dto';
@@ -10,7 +10,7 @@ import { RoleType } from '../common/tiporole.enum';
 import { PermisoType } from '../common/permiso.enum';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('deportista')
 export class DeportistaController {
@@ -20,19 +20,42 @@ export class DeportistaController {
   @ApiBearerAuth('mi secreto1')
   @Authen(RoleType.ADMIN, PermisoType.WRITE)
   @Post()
-  @UseInterceptors(FileInterceptor('fotoFile'))
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'fotoFile', maxCount: 1 },
+    { name: 'documentoIdentidadFile', maxCount: 1 },
+    { name: 'registroCivilFile', maxCount: 1 },
+    { name: 'afiliacionFile', maxCount: 1 },
+    { name: 'certificadoEpsFile', maxCount: 1 },
+    { name: 'permisoResponsableFile', maxCount: 1 }
+  ]))
   @ApiOperation({ summary: 'Crear un nuevo deportista' })
   @ApiResponse({ status: 201, description: 'Deportista creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Ya existe un deportista con este documento' })
   @ApiConsumes('multipart/form-data') // Añade esta línea
-  create(
+  async create(
     @Body() createDeportistaDto: CreateDeportistaDto,
-    @UploadedFile() fotoFile?: Express.Multer.File,
+    @UploadedFiles() files: {
+      fotoFile?: Express.Multer.File[],
+      documentoIdentidadFile?: Express.Multer.File[],
+      registroCivilFile?: Express.Multer.File[],
+      afiliacionFile?: Express.Multer.File[],
+      certificadoEpsFile?: Express.Multer.File[],
+      permisoResponsableFile?: Express.Multer.File[]
+    }
   ) {
-    return this.deportistaService.create(createDeportistaDto, fotoFile);
+    // Convertir los arrays de archivos a archivos individuales
+    const fileObjects = {
+      fotoFile: files.fotoFile?.[0],
+      documentoIdentidadFile: files.documentoIdentidadFile?.[0],
+      registroCivilFile: files.registroCivilFile?.[0],
+      afiliacionFile: files.afiliacionFile?.[0],
+      certificadoEpsFile: files.certificadoEpsFile?.[0],
+      permisoResponsableFile: files.permisoResponsableFile?.[0]
+    };
+  
+    return this.deportistaService.create(createDeportistaDto, fileObjects);
   }
-
   @ApiBearerAuth('mi secreto1')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los deportistas activos' })
@@ -57,12 +80,41 @@ export class DeportistaController {
 
   @ApiBearerAuth('mi secreto1')
   @Patch(':id')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'fotoFile', maxCount: 1 },
+    { name: 'documentoIdentidadFile', maxCount: 1 },
+    { name: 'registroCivilFile', maxCount: 1 },
+    { name: 'afiliacionFile', maxCount: 1 },
+    { name: 'certificadoEpsFile', maxCount: 1 },
+    { name: 'permisoResponsableFile', maxCount: 1 }
+  ]))
   @ApiOperation({ summary: 'Actualizar un deportista' })
   @ApiResponse({ status: 200, description: 'Deportista actualizado' })
   @ApiResponse({ status: 404, description: 'Deportista no encontrado' })
   @ApiResponse({ status: 409, description: 'Ya existe un deportista con este documento' })
-  update(@Param('id') id: string, @Body() updateDeportistaDto: UpdateDeportistaDto) {
-    return this.deportistaService.update(+id, updateDeportistaDto);
+  @ApiConsumes('multipart/form-data')
+  async update(
+    @Param('id') id: string,
+    @Body() updateDeportistaDto: UpdateDeportistaDto,
+    @UploadedFiles() files: {
+      fotoFile?: Express.Multer.File[],
+      documentoIdentidadFile?: Express.Multer.File[],
+      registroCivilFile?: Express.Multer.File[],
+      afiliacionFile?: Express.Multer.File[],
+      certificadoEpsFile?: Express.Multer.File[],
+      permisoResponsableFile?: Express.Multer.File[]
+    }
+  ) {
+    const fileObjects = {
+      fotoFile: files.fotoFile?.[0],
+      documentoIdentidadFile: files.documentoIdentidadFile?.[0],
+      registroCivilFile: files.registroCivilFile?.[0],
+      afiliacionFile: files.afiliacionFile?.[0],
+      certificadoEpsFile: files.certificadoEpsFile?.[0],
+      permisoResponsableFile: files.permisoResponsableFile?.[0]
+    };
+  
+    return this.deportistaService.update(+id, updateDeportistaDto, fileObjects);
   }
 
   @ApiBearerAuth('mi secreto1')

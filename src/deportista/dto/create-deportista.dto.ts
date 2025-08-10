@@ -81,4 +81,49 @@ export class CreateDeportistaDto {
   @IsString()
   @MinLength(1)
   direccion: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo PDF del documento de identidad',
+    required: false
+  })
+  @IsOptional()
+  documentoIdentidadFile?: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo PDF del registro civil',
+    required: false
+  })
+  @IsOptional()
+  registroCivilFile?: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo PDF de afiliación',
+    required: false
+  })
+  @IsOptional()
+  afiliacionFile?: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo PDF del certificado EPS',
+    required: false
+  })
+  @IsOptional()
+  certificadoEpsFile?: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Archivo PDF del permiso del responsable',
+    required: false
+  })
+  @IsOptional()
+  permisoResponsableFile?: any;
 }
